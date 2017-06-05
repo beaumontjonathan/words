@@ -1,0 +1,18 @@
+{
+  "name": "master-server",
+  "version": "1.0.0",
+  "description": "Program for the head server to link all worker servers to unify socket.io interaction",
+  "main": "MasterServer.js",
+  "scripts": {
+    "start": "node MasterServer.js",
+    "test": "echo \"No test command yet\""
+  },
+  "author": "Jonathan Beaumont",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^7.0.27",
+    "@types/socket.io": "^1.4.29",
+    "http": "0.0.0",
+    "socket.io": "^2.0.2"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "name": "client-api",
+  "version": "1.0.0",
+  "description": "A CLI program to test the words socket api; a command line version of the ionic app containing core functionality.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No test command yet\""
+  },
+  "author": "Jonathan Beaumont",
+  "license": "ISC"
+}

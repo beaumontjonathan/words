@@ -1,0 +1,11 @@
+{
+  "name": "worker-server",
+  "version": "1.0.0",
+  "description": "Program to run on each node of the server, allowing socket connections and linking to the head server to unify messages to all connected users",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"No test command yet\""
+  },
+  "author": "Jonathan Beaumont",
+  "license": "ISC"
+}
