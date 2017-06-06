@@ -41,7 +41,7 @@ export class MasterServer {
      */
     private listen(): void {
         this.server.listen(this.port, () => {
-            console.log('Running server on port %s', this.port);
+            console.log('Running server on port %s.', this.port);
         });
 
         this.io.on('connect', this.handleConnection.bind(this));
@@ -53,6 +53,7 @@ export class MasterServer {
      * @param socket The new socket connection.
      */
     private handleConnection(socket: any): void {
+        console.log('Connection from worker server.');
         new WorkerServerSocket(socket, this);
     }
 

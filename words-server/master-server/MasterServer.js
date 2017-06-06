@@ -36,7 +36,7 @@ var MasterServer = (function () {
     MasterServer.prototype.listen = function () {
         var _this = this;
         this.server.listen(this.port, function () {
-            console.log('Running server on port %s', _this.port);
+            console.log('Running server on port %s.', _this.port);
         });
         this.io.on('connect', this.handleConnection.bind(this));
     };
@@ -46,6 +46,7 @@ var MasterServer = (function () {
      * @param socket The new socket connection.
      */
     MasterServer.prototype.handleConnection = function (socket) {
+        console.log('Connection from worker server.');
         new WorkerServerSocket_1.WorkerServerSocket(socket, this);
     };
     return MasterServer;
