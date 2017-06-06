@@ -37,14 +37,14 @@ export class MasterServer {
 
     /**
      * Starts listening for socket connections, and on a connection
-     * it runs is handled by <code>handleConnection()</code>.
+     * it runs is handled by <code>connectEvent()</code>.
      */
     private listen(): void {
         this.server.listen(this.port, () => {
             console.log('Running server on port %s.', this.port);
         });
 
-        this.io.on('connect', this.handleConnection.bind(this));
+        this.io.on('connect', this.connectEvent.bind(this));
     }
 
     /**
@@ -52,7 +52,7 @@ export class MasterServer {
      * <code>WorkerServerSocket</code> to manage socket events.
      * @param socket The new socket connection.
      */
-    private handleConnection(socket: any): void {
+    private connectEvent(socket: any): void {
         console.log('Connection from worker server.');
         new WorkerServerSocket(socket, this);
     }

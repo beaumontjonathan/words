@@ -31,21 +31,21 @@ var MasterServer = (function () {
     }
     /**
      * Starts listening for socket connections, and on a connection
-     * it runs is handled by <code>handleConnection()</code>.
+     * it runs is handled by <code>connectEvent()</code>.
      */
     MasterServer.prototype.listen = function () {
         var _this = this;
         this.server.listen(this.port, function () {
             console.log('Running server on port %s.', _this.port);
         });
-        this.io.on('connect', this.handleConnection.bind(this));
+        this.io.on('connect', this.connectEvent.bind(this));
     };
     /**
      * Handles a new socket connection. Instantiates a new
      * <code>WorkerServerSocket</code> to manage socket events.
      * @param socket The new socket connection.
      */
-    MasterServer.prototype.handleConnection = function (socket) {
+    MasterServer.prototype.connectEvent = function (socket) {
         console.log('Connection from worker server.');
         new WorkerServerSocket_1.WorkerServerSocket(socket, this);
     };

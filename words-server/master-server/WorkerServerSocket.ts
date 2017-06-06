@@ -49,7 +49,7 @@ export class WorkerServerSocket {
     }
 
     /**
-     * Handles the socket <code>error</code> event by loggin it to
+     * Handles the socket <code>error</code> event by logging it to
      * the console.
      * @param error The socket error.
      */
