@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * requests.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.1.0
  * @since   2017-06-05
  */
 var ClientSocket = (function () {
@@ -30,6 +30,8 @@ var ClientSocket = (function () {
         this.socket.on('disconnect', this.disconnectEvent.bind(this));
         this.socket.on('error', this.errorEvent.bind(this));
         // words api events
+        this.socket.on('login request', this.loginRequestEvent.bind(this));
+        this.socket.on('logout request', this.logoutRequestEvent.bind(this));
     };
     /**
      * Handles the socket <code>disconnect</code> event by logging it
@@ -38,6 +40,7 @@ var ClientSocket = (function () {
      */
     ClientSocket.prototype.disconnectEvent = function (reason) {
         console.log('Disconnecting socket. Reason: ' + reason);
+        this.workerServer.disconnectFromClient(this.socket);
     };
     /**
      * Handles the socket <code>error</code> event by logging it to
@@ -47,6 +50,25 @@ var ClientSocket = (function () {
     ClientSocket.prototype.errorEvent = function (error) {
         console.log('Socket error: ');
         console.log(error);
+    };
+    /**
+     * Handles the socket <code>login request</code> event, then emits
+     * the <code>login response</code> back to the client.
+     * @param req Contains the login username and password information.
+     */
+    ClientSocket.prototype.loginRequestEvent = function (req) {
+        var _this = this;
+        this.workerServer.loginRequestEvent(req, this.socket, function (res) {
+            _this.socket.emit('login response', res);
+        });
+    };
+    /**
+     * Handles the socket <code>logout request</code> event, then emits
+     * the <code> logout response</code> back to the client.
+     */
+    ClientSocket.prototype.logoutRequestEvent = function () {
+        var res = this.workerServer.logoutRequestEvent(this.socket);
+        this.socket.emit('logout response', res);
     };
     return ClientSocket;
 }());

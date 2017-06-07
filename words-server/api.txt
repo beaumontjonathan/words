@@ -1,0 +1,20 @@
+Socket events
+
+Login
+    Request:
+        Name:   "login request"
+        Data:   { username: string, password: string }
+
+    Response:
+        Name:   "login response"
+        Data:   { success: boolean, invalidUsername?: boolean, invalidPassword?: boolean, incorrectUsername?: boolean, incorrectPassword?: boolean }
+
+Logout
+    Request:
+        Name:   "logout request"
+        Data:   {}
+
+    Response:
+        Name:   "logout response"
+        Data:    { success: boolean, wasLoggedIn?: boolean }
+
