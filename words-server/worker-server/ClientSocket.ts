@@ -10,13 +10,13 @@ import {LogoutResponse} from "../interfaces/Logout";
  * requests.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1
  * @since   2017-06-05
  */
 export class ClientSocket {
   
-  private socket: any;        // The client socket.
-  private workerServer: any;  // The WorkerServer object.
+  private socket: SocketIO.Socket;  // The client socket.
+  private workerServer: WorkerServer;  // The WorkerServer object.
   
   /**
    * Constructor. Run when a new socket is connected. Sets up the
@@ -24,7 +24,7 @@ export class ClientSocket {
    * @param socket        The client socket.
    * @param workerServer  The WorkerServer object.
    */
-  constructor(socket: any, workerServer: WorkerServer) {
+  constructor(socket: SocketIO.Socket, workerServer: WorkerServer) {
     this.socket = socket;
     this.workerServer = workerServer;
     this.bindEvents();

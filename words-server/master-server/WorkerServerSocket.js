@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * Worker Servers.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-05
  */
 var WorkerServerSocket = (function () {

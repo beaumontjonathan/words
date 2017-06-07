@@ -10,15 +10,15 @@ import {WorkerServer} from "./WorkerServer";
  * server.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-05
  */
 export class MasterClientSocket {
 
   private workerServer: WorkerServer; // WorkerServer object.
-  private socket: any;                // The client socket.
-  private masterHost: string;         // Hostname of the master node.
-  private masterPort: number;         // Port of the master node.
+  private socket: SocketIOClient.Socket;  // The client socket.
+  private masterHost: string; // Hostname of the master node.
+  private masterPort: number; // Port of the master node.
   
   // Default values for the hostname and port of the master node.
   static readonly DEFAULT_HOST: string = 'localhost';

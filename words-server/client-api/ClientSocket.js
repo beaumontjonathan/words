@@ -9,7 +9,7 @@ var readline_1 = require("readline");
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1
  * @since   2017-06-06
  */
 var ClientSocket = (function () {

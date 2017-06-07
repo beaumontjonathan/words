@@ -8,7 +8,7 @@ var socketIOClient = require('socket.io-client'); //todo: change to import
  * server.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-05
  */
 var MasterClientSocket = (function () {

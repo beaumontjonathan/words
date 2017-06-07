@@ -15,7 +15,7 @@ var LoginManager_1 = require("./LoginManager");
  * messages via the master node, which emits messages to all workers.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1c
  * @since   2017-06-05
  */
 var WorkerServer = (function () {

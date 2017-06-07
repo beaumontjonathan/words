@@ -14,12 +14,12 @@ import {WorkerServerSocket} from "./WorkerServerSocket";
  * updates to all relevant clients on all servers.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-05
  */
 export class MasterServer {
 
-    private io: any;        // The socket.io server.
+    private io: SocketIO.Server;        // The socket.io server.
     private server: any;    // The app http server.
     private port: number;   // The port number.
 
@@ -52,7 +52,7 @@ export class MasterServer {
      * <code>WorkerServerSocket</code> to manage socket events.
      * @param socket The new socket connection.
      */
-    private connectEvent(socket: any): void {
+    private connectEvent(socket: SocketIO.Socket): void {
         console.log('Connection from worker server.');
         new WorkerServerSocket(socket, this);
     }

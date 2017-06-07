@@ -17,16 +17,15 @@ import {LogoutResponse} from "../interfaces/Logout";
  * messages via the master node, which emits messages to all workers.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1c
  * @since   2017-06-05
  */
 export class WorkerServer {
   
-  private io: any;                  // The socket.io server.
+  private io: SocketIO.Server;      // The socket.io server.
   private server: any;              // The http server.
-  private masterClientSocket: any;  /* The client socket to the
-                                     * master node.
-                                     */
+  /* The client socket to the master node. */
+  private masterClientSocket: MasterClientSocket;
   private loginManager: LoginManager; // Stores logged in sockets.
   private port: number;             // The port to listen on.
   
@@ -66,7 +65,7 @@ export class WorkerServer {
    * when the client disconnects.
    * @param socket  The socket which has just disconnected.
    */
-  public disconnectFromClient(socket: any): void {
+  public disconnectFromClient(socket: SocketIO.Socket): void {
     this.loginManager.logout(socket);
   }
   
@@ -86,7 +85,7 @@ export class WorkerServer {
    * <code>ClientSocket</code> object.
    * @param socket
    */
-  private connectEvent(socket: any): void {
+  private connectEvent(socket: SocketIO.Socket): void {
     console.log('Connection from client.');
     new ClientSocket(socket, this);
   }
@@ -100,7 +99,7 @@ export class WorkerServer {
    * @param callback  Function to be run after the login status has
    *                  been determined.
    */
-  public loginRequestEvent(req: LoginRequest, socket: any, callback: (res: LoginResponse) => void): void {
+  public loginRequestEvent(req: LoginRequest, socket: SocketIO.Socket, callback: (res: LoginResponse) => void): void {
     
     // Instantiates the return object containing login response.
     let res: LoginResponse = {success: false};
@@ -192,7 +191,7 @@ export class WorkerServer {
    * @param socket
    * @returns {LogoutResponse}
    */
-  public logoutRequestEvent(socket: any): LogoutResponse {
+  public logoutRequestEvent(socket: SocketIO.Socket): LogoutResponse {
     let res: LogoutResponse = {success: false, wasLoggedIn: false};
     if (this.loginManager.isLoggedIn(socket)) {
       res.wasLoggedIn = true;

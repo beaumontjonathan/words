@@ -6,12 +6,12 @@
  * sockets to logout.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-07
  */
 export class LoginManager {
   
-  private sockets: any[];      // Holds the of logged in sockets.
+  private sockets: SocketIO.Socket[];      // Holds the of logged in sockets.
   private usernames: string[]; //Holds the of logged in usernames.
   
   /**
@@ -46,7 +46,7 @@ export class LoginManager {
    * @param username  The username logging in.
    * @param socket    The socket connected to the client logging in.
    */
-  public login(username: string, socket: any): void {
+  public login(username: string, socket: SocketIO.Socket): void {
     console.log(username + ' is logging in.');
     this.usernames.push(username);
     this.sockets.push(socket);
@@ -58,7 +58,7 @@ export class LoginManager {
    * @param socket  The socket connected to the client logging out.
    * @returns {boolean} Whether the logout was successful.
    */
-  public logout(socket: any): boolean {
+  public logout(socket: SocketIO.Socket): boolean {
     if (this.isLoggedIn(socket)) {
       console.log(this.getUsernameFromSocket(socket) + ' is logging out.');
       let index = this.sockets.indexOf(socket);
@@ -76,7 +76,7 @@ export class LoginManager {
    * @param socket  The socket connected to the client.
    * @returns {string}  The username linked to the socket.
    */
-  public getUsernameFromSocket(socket: any): string {
+  public getUsernameFromSocket(socket: SocketIO.Socket): string {
     let username: string;
     if (this.isLoggedIn(socket)) {
       username = this.usernames[this.sockets.indexOf(socket)];

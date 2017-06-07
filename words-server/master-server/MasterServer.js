@@ -14,7 +14,7 @@ var WorkerServerSocket_1 = require("./WorkerServerSocket");
  * updates to all relevant clients on all servers.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-05
  */
 var MasterServer = (function () {

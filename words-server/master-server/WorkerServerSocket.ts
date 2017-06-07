@@ -8,12 +8,12 @@ import {MasterServer} from "./MasterServer";
  * Worker Servers.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-05
  */
 export class WorkerServerSocket {
 
-    private socket: any;                // The server socket.
+    private socket: SocketIO.Socket;                // The server socket.
     private masterServer: MasterServer; // The MasterServer object.
 
     /**
@@ -22,7 +22,7 @@ export class WorkerServerSocket {
      * @param socket        The server socket.
      * @param masterServer  The MasterServer object.
      */
-    constructor(socket: any, masterServer: MasterServer) {
+    constructor(socket: SocketIO.Socket, masterServer: MasterServer) {
         this.socket = socket;
         this.masterServer = masterServer;
         this.bindEvents();

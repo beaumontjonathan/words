@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * requests.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1
  * @since   2017-06-05
  */
 var ClientSocket = (function () {

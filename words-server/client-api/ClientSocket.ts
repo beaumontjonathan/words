@@ -12,12 +12,12 @@ import {LogoutResponse} from "../interfaces/Logout";
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1
  * @since   2017-06-06
  */
 export class ClientSocket {
   
-  private socket: any;  // The client socket.
+  private socket: SocketIOClient.Socket;  // The client socket.
   private host: string; // The host name of the server.
   private port: number; // The port number of the server.
   private socketConnected: boolean; // Whether the socket is connected

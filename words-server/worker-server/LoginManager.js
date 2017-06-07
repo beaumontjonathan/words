@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * sockets to logout.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-07
  */
 var LoginManager = (function () {
