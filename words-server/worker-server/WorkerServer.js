@@ -7,6 +7,7 @@ var socketIO = require("socket.io");
 var MasterClientSocket_1 = require("./MasterClientSocket");
 var ClientSocket_1 = require("./ClientSocket");
 var LoginManager_1 = require("./LoginManager");
+var WordsDatabaseHandler_1 = require("./WordsDatabaseHandler");
 /**
  * <h1>Worker Server</h1>
  * This is the server worker node for the socket.io based words
@@ -15,19 +16,20 @@ var LoginManager_1 = require("./LoginManager");
  * messages via the master node, which emits messages to all workers.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.1c
+ * @version 1.2.0
  * @since   2017-06-05
  */
 var WorkerServer = (function () {
     /**
      * Constructor. Takes the port number, starts the server, starts
-     * socket listening for the master node and starts listening for
-     * clients on the given port.
+     * socket listening for the master node, establishes a database
+     * pool, and starts listening for clients on the given port.
      * @param port This is the port number to listen for clients  on.
      */
     function WorkerServer(port) {
         this.port = port;
         this.loginManager = new LoginManager_1.LoginManager();
+        this.dbHandler = new WordsDatabaseHandler_1.WordsDatabaseHandler();
         this.server = http_1.createServer();
         this.io = socketIO(this.server);
         this.startMasterClientSocket();
@@ -152,17 +154,18 @@ var WorkerServer = (function () {
         return false;
     };
     /**
-     * This will use a database wrapper to check whether the login
-     * details are stored in the database. Currently it just returns
-     * no login errors, as if the database recognises it.
+     * Uses the <code>WordsDatabaseHandler</code> to check whether the
+     * login credentials provided by the user associate with those in
+     * the database.
      * @param username  The username to check.
      * @param password  The password to check
      * @param callback  Function to be run once the login username and
      *                  password details have been verified.
      */
     WorkerServer.prototype.checkLoginDetails = function (username, password, callback) {
-        //todo
-        callback(false, false);
+        this.dbHandler.verifyCredentials(username, password, function (incorrectUsername, incorrectPassword) {
+            callback(!incorrectUsername, !incorrectPassword);
+        });
     };
     /**
      * Handles the logout event. Emits the response of the login
@@ -179,6 +182,23 @@ var WorkerServer = (function () {
             }
         }
         return res;
+    };
+    WorkerServer.prototype.createAccountRequestEvent = function (req, socket, callback) {
+        var res = { success: false };
+        res.invalidUsername = !this.isValidUsername(req.username);
+        res.invalidPassword = !this.isValidPassword(req.password);
+        if (res.invalidUsername || res.invalidPassword) {
+            callback(res);
+        }
+        else {
+            this.dbHandler.addUser(req.username, req.password, function (success, id) {
+                res.success = success;
+                if (!success) {
+                    res.usernameTaken = false;
+                }
+                callback(res);
+            });
+        }
     };
     return WorkerServer;
 }());

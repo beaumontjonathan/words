@@ -9,7 +9,7 @@ var readline_1 = require("readline");
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.1
+ * @version 1.2.0
  * @since   2017-06-06
  */
 var ClientSocket = (function () {
@@ -76,6 +76,16 @@ var ClientSocket = (function () {
                         response = 'Attempting logout...';
                         this.logoutRequest();
                     }
+                    break;
+                // Create account command
+                case "create":
+                    if (words.length === 4 && words[1] === 'account') {
+                        response = 'Attempting account creation...';
+                        this.createAccountRequest({ username: words[2], password: words[3] });
+                    }
+                    else {
+                        response = 'Usage: create account <username> <password>';
+                    }
             }
         }
         console.log(response);
@@ -99,6 +109,7 @@ var ClientSocket = (function () {
         // words api events
         this.socket.on('login response', this.loginResponse.bind(this));
         this.socket.on('logout response', this.logoutResponse.bind(this));
+        this.socket.on('createAccount response', this.createAccountResponse.bind(this));
     };
     /**
      * Handles the socket <code>connect</code event by logging it to
@@ -178,6 +189,33 @@ var ClientSocket = (function () {
             console.log('You must login before you can logout.');
         }
     };
+    /**
+     * Emits an account creation request to the server, containing the
+     * username and password information.
+     * @param data  Contains the new username and password.
+     */
+    ClientSocket.prototype.createAccountRequest = function (data) {
+        this.socket.emit('createAccount request', data);
+    };
+    /**
+     * Processes the response to the account creation request.
+     * @param data  Contains data about the success of the account
+     *              creation attempt.
+     */
+    ClientSocket.prototype.createAccountResponse = function (data) {
+        if (data.success) {
+            console.log('Account successfully created.');
+        }
+        else if (data.invalidUsername) {
+            console.log('Invalid username.');
+        }
+        else if (data.invalidPassword) {
+            console.log('Invalid password.');
+        }
+        else if (data.usernameTaken) {
+            console.log('Username taken. Please try another.');
+        }
+    };
     return ClientSocket;
 }());
 exports.ClientSocket = ClientSocket;
@@ -185,4 +223,3 @@ exports.ClientSocket = ClientSocket;
  * being respectively the cli arguments.
  */
 new ClientSocket(process.argv[2], parseInt(process.argv[3])).startSocketConnection();
-//# sourceMappingURL=ClientSocket.js.map

@@ -8,6 +8,8 @@ import {ClientSocket} from "./ClientSocket";
 import {LoginRequest, LoginResponse} from "../interfaces/Login";
 import {LoginManager} from "./LoginManager";
 import {LogoutResponse} from "../interfaces/Logout";
+import {WordsDatabaseHandler} from "./WordsDatabaseHandler";
+import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
 
 /**
  * <h1>Worker Server</h1>
@@ -17,27 +19,30 @@ import {LogoutResponse} from "../interfaces/Logout";
  * messages via the master node, which emits messages to all workers.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.1c
+ * @version 1.2.0
  * @since   2017-06-05
  */
 export class WorkerServer {
   
   private io: SocketIO.Server;      // The socket.io server.
   private server: any;              // The http server.
-  /* The client socket to the master node. */
+  // The client socket to the master node.
   private masterClientSocket: MasterClientSocket;
   private loginManager: LoginManager; // Stores logged in sockets.
+  // Handles user database storage.
+  private dbHandler: WordsDatabaseHandler;
   private port: number;             // The port to listen on.
   
   /**
    * Constructor. Takes the port number, starts the server, starts
-   * socket listening for the master node and starts listening for
-   * clients on the given port.
+   * socket listening for the master node, establishes a database
+   * pool, and starts listening for clients on the given port.
    * @param port This is the port number to listen for clients  on.
    */
   constructor(port: number) {
     this.port = port;
     this.loginManager = new LoginManager();
+    this.dbHandler = new WordsDatabaseHandler();
     this.server = createServer();
     this.io = socketIO(this.server);
     this.startMasterClientSocket();
@@ -172,17 +177,18 @@ export class WorkerServer {
   }
   
   /**
-   * This will use a database wrapper to check whether the login
-   * details are stored in the database. Currently it just returns
-   * no login errors, as if the database recognises it.
+   * Uses the <code>WordsDatabaseHandler</code> to check whether the
+   * login credentials provided by the user associate with those in
+   * the database.
    * @param username  The username to check.
    * @param password  The password to check
    * @param callback  Function to be run once the login username and
    *                  password details have been verified.
    */
-  private checkLoginDetails(username: string, password: string, callback: (incorrectUsername: boolean, incorrectPassword: boolean) => void) {
-    //todo
-    callback(false, false);
+  private checkLoginDetails(username: string, password: string, callback: (incorrectUsername: boolean, incorrectPassword: boolean) => void): void {
+    this.dbHandler.verifyCredentials(username, password, (incorrectUsername, incorrectPassword) => {
+      callback(!incorrectUsername, !incorrectPassword);
+    });
   }
   
   /**
@@ -200,6 +206,23 @@ export class WorkerServer {
       }
     }
     return res;
+  }
+  
+  public createAccountRequestEvent(req: CreateAccountRequest, socket: SocketIO.Socket, callback: (res: CreateAccountResponse) => void): void {
+    let res: CreateAccountResponse= {success: false};
+    res.invalidUsername = !this.isValidUsername(req.username);
+    res.invalidPassword = !this.isValidPassword(req.password);
+    if (res.invalidUsername|| res.invalidPassword) {
+      callback(res);
+    } else {
+      this.dbHandler.addUser(req.username, req.password, (success: boolean, id: number) => {
+        res.success = success;
+        if (!success) {
+          res.usernameTaken = false;
+        }
+        callback(res);
+      });
+    }
   }
 }
 

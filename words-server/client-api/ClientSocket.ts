@@ -5,6 +5,7 @@ import {createInterface} from 'readline';
 // Project imports
 import {LoginRequest, LoginResponse} from "../interfaces/Login";
 import {LogoutResponse} from "../interfaces/Logout";
+import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
 
 /**
  * <h1>Client Socket API Test</h1>
@@ -12,7 +13,7 @@ import {LogoutResponse} from "../interfaces/Logout";
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.1
+ * @version 1.2.0
  * @since   2017-06-06
  */
 export class ClientSocket {
@@ -89,6 +90,16 @@ export class ClientSocket {
             response = 'Attempting logout...';
             this.logoutRequest();
           }
+          break;
+          
+        // Create account command
+        case "create":
+          if (words.length === 4 && words[1] === 'account') {
+            response = 'Attempting account creation...';
+            this.createAccountRequest({username: words[2], password: words[3]});
+          } else {
+            response = 'Usage: create account <username> <password>';
+          }
       }
     }
     console.log(response);
@@ -115,6 +126,7 @@ export class ClientSocket {
     // words api events
     this.socket.on('login response', this.loginResponse.bind(this));
     this.socket.on('logout response', this.logoutResponse.bind(this));
+    this.socket.on('createAccount response', this.createAccountResponse.bind(this));
   }
   
   /**
@@ -195,6 +207,31 @@ export class ClientSocket {
     }
   }
   
+  /**
+   * Emits an account creation request to the server, containing the
+   * username and password information.
+   * @param data  Contains the new username and password.
+   */
+  private createAccountRequest(data: CreateAccountRequest) {
+    this.socket.emit('createAccount request', data);
+  }
+  
+  /**
+   * Processes the response to the account creation request.
+   * @param data  Contains data about the success of the account
+   *              creation attempt.
+   */
+  private createAccountResponse(data: CreateAccountResponse) {
+    if (data.success) {
+      console.log('Account successfully created.');
+    } else if (data.invalidUsername) {
+      console.log('Invalid username.');
+    } else if (data.invalidPassword) {
+      console.log('Invalid password.');
+    } else if (data.usernameTaken) {
+      console.log('Username taken. Please try another.');
+    }
+  }
 }
 
 /* Starts a ClientSocket object with the hostname and port number

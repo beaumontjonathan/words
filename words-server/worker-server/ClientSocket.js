@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * requests.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.1
+ * @version 1.2.0
  * @since   2017-06-05
  */
 var ClientSocket = (function () {
@@ -32,6 +32,7 @@ var ClientSocket = (function () {
         // words api events
         this.socket.on('login request', this.loginRequestEvent.bind(this));
         this.socket.on('logout request', this.logoutRequestEvent.bind(this));
+        this.socket.on('createAccount request', this.createAccountEvent.bind(this));
     };
     /**
      * Handles the socket <code>disconnect</code> event by logging it
@@ -64,11 +65,23 @@ var ClientSocket = (function () {
     };
     /**
      * Handles the socket <code>logout request</code> event, then emits
-     * the <code> logout response</code> back to the client.
+     * the <code>logout response</code> back to the client.
      */
     ClientSocket.prototype.logoutRequestEvent = function () {
         var res = this.workerServer.logoutRequestEvent(this.socket);
         this.socket.emit('logout response', res);
+    };
+    /**
+     * Handles the socket <code>createAccount request</code> event,
+     * then emits the <code>createAccount response</code> back to the
+     * client.
+     * @param req Contains the account creation username and password.
+     */
+    ClientSocket.prototype.createAccountEvent = function (req) {
+        var _this = this;
+        this.workerServer.createAccountRequestEvent(req, this.socket, function (res) {
+            _this.socket.emit('createAccount response', res);
+        });
     };
     return ClientSocket;
 }());

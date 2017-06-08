@@ -18,3 +18,11 @@ Logout
         Name:   "logout response"
         Data:    { success: boolean, wasLoggedIn?: boolean }
 
+Create Account
+    Request:
+        Name:   "createAccount request"
+        Data:   { username: string, password: string }
+
+    Response
+        Name:   "createAccount response"
+        Data:   { success: boolean, usernameTaken: boolean, invalidUsername?: boolean, invalidPassword?: boolean }
