@@ -47,7 +47,7 @@ var WordsDatabaseHandler = (function () {
             // Hash the password.
             bcrypt_1.hash(password, 10)
                 .then(function (hash) {
-                var statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE_USERS + ' (' + WordsDatabaseHandler.FIELD_USERNAME + ', ' + WordsDatabaseHandler.FIELD_PASSWORD + ') VALUES (?, ?)';
+                var statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE_USERS + ' (' + WordsDatabaseHandler.USERS_FIELD_USERNAME + ', ' + WordsDatabaseHandler.USERS_FIELD_PASSWORD + ') VALUES (?, ?)';
                 // Queries the database with an add user query.
                 conn.query(statement, [username, hash], function (err, res) {
                     conn.release();
@@ -89,7 +89,7 @@ var WordsDatabaseHandler = (function () {
                     callback(false);
             }
             else {
-                var statement = 'DELETE FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + WordsDatabaseHandler.FIELD_USERNAME + '=?';
+                var statement = 'DELETE FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + WordsDatabaseHandler.USERS_FIELD_USERNAME + '=?';
                 // Attempt to delete the user from the database.
                 conn.query(statement, username, function (err, res) {
                     conn.release();
@@ -126,7 +126,7 @@ var WordsDatabaseHandler = (function () {
             /* If the field if not the if or username, return false to the
              * callback function.
              */
-            if (field !== WordsDatabaseHandler.FIELD_ID && field !== WordsDatabaseHandler.FIELD_USERNAME) {
+            if (field !== WordsDatabaseHandler.USERS_FIELD_ID && field !== WordsDatabaseHandler.USERS_FIELD_USERNAME) {
                 callback(false);
             }
             var statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + field + '=?';
@@ -150,6 +150,35 @@ var WordsDatabaseHandler = (function () {
         });
     };
     /**
+     * Fetches the id corresponding to a username of a user and returns
+     * its value to a callback function.. If the username is not
+     * registered, then undefined is returned to the callback.
+     * @param username  The username to find the id of.
+     * @param callback  Function to be run after the id has been found.
+     */
+    WordsDatabaseHandler.prototype.getIdFromUsername = function (username, callback) {
+        this.pool.getConnection(function (err, conn) {
+            if (err)
+                throw err;
+            var statement = 'SELECT ' + WordsDatabaseHandler.USERS_FIELD_ID + ' from ' + WordsDatabaseHandler.TABLE_USERS + ' where username=?';
+            conn.query(statement, username, function (err, res) {
+                conn.release();
+                if (err) {
+                    callback(undefined);
+                }
+                else if (typeof res === 'object') {
+                    if (res.length === 1)
+                        callback(res[0].id);
+                    else
+                        callback(undefined);
+                }
+                else {
+                    callback(undefined);
+                }
+            });
+        });
+    };
+    /**
      * Verifies whether a username and password correspond to a user
      * entry in the database. Uses encryption to store and verify the
      * password.
@@ -161,7 +190,7 @@ var WordsDatabaseHandler = (function () {
         this.pool.getConnection(function (err, conn) {
             if (err)
                 throw err;
-            var statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + WordsDatabaseHandler.FIELD_USERNAME + '=?';
+            var statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + WordsDatabaseHandler.USERS_FIELD_USERNAME + '=?';
             // Runs the fetch query.
             conn.query(statement, username, function (err, res) {
                 conn.release();
@@ -195,12 +224,70 @@ var WordsDatabaseHandler = (function () {
             });
         });
     };
+    /**
+     * Adds a new word entry linked to a user and returns whether the
+     * insert query was successful to a callback function.
+     * @param username  The username of the user adding the word.
+     * @param word      The word to be added.
+     * @param callback  Function to be run after the word is added.
+     */
+    WordsDatabaseHandler.prototype.addWord = function (username, word, callback) {
+        var _this = this;
+        this.getIdFromUsername(username, function (userId) {
+            if (typeof userId === 'undefined') {
+                callback(false);
+            }
+            else {
+                _this.pool.getConnection(function (err, conn) {
+                    if (err)
+                        throw err;
+                    var statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE_WORDS + ' (' + WordsDatabaseHandler.WORDS_FIELD_USERID + ', ' + WordsDatabaseHandler.WORDS_FIELD_WORD + ') VALUES (?, ?)';
+                    conn.query(statement, [userId, word], function (err, res) {
+                        if (err) {
+                            callback(false);
+                        }
+                        else if (typeof res === 'object' && res.affectedRows === 1) {
+                            callback(true);
+                        }
+                        else {
+                            callback(false);
+                        }
+                    });
+                });
+            }
+        });
+    };
+    /**
+     * Deletes a word entry from the words table. Takes the username
+     * corresponding to the <code>userId</code> and the word to remove.
+     * Returns the success of the operation to a callback function.
+     * @param username  The username of the user.
+     * @param word      The word to remove.
+     * @param callback  Function to be run after the word is removed.
+     */
+    WordsDatabaseHandler.prototype.deleteWord = function (username, word, callback) {
+        this.pool.getConnection(function (err, conn) {
+            if (err)
+                throw err;
+            var statement = 'DELETE FROM ' + WordsDatabaseHandler.TABLE_WORDS +
+                ' WHERE ' + WordsDatabaseHandler.WORDS_FIELD_USERID + ' = (' +
+                'SELECT ' + WordsDatabaseHandler.USERS_FIELD_ID + ' FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + WordsDatabaseHandler.USERS_FIELD_USERNAME + ' = ?)' +
+                ' AND ' + WordsDatabaseHandler.WORDS_FIELD_WORD + ' = ?';
+            conn.query(statement, [username, word], function (err, res) {
+                callback(typeof res === 'object' && res.affectedRows > 0);
+            });
+        });
+    };
     return WordsDatabaseHandler;
 }());
 WordsDatabaseHandler.DATABASE_NAME = 'words'; // Name of the database.
 WordsDatabaseHandler.TABLE_USERS = 'users'; // Name of the users table.
-WordsDatabaseHandler.FIELD_ID = 'id'; // User id field.
-WordsDatabaseHandler.FIELD_USERNAME = 'username'; // Username field.
-WordsDatabaseHandler.FIELD_PASSWORD = 'password'; // Password field.
+WordsDatabaseHandler.USERS_FIELD_ID = 'id'; // User id field.
+WordsDatabaseHandler.USERS_FIELD_USERNAME = 'username'; // Username field.
+WordsDatabaseHandler.USERS_FIELD_PASSWORD = 'password'; // Password field.
+WordsDatabaseHandler.TABLE_WORDS = 'words'; // Name of the words table.
+WordsDatabaseHandler.WORDS_FIELD_ID = 'id'; // Word id field
+WordsDatabaseHandler.WORDS_FIELD_USERID = 'userId'; // User id field.
+WordsDatabaseHandler.WORDS_FIELD_WORD = 'word'; // Word
 exports.WordsDatabaseHandler = WordsDatabaseHandler;
 //# sourceMappingURL=WordsDatabaseHandler.js.map
