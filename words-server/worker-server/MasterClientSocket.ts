@@ -1,8 +1,9 @@
 // Module imports
-const socketIOClient = require('socket.io-client'); //todo: change to import
+import * as socketIOClient from 'socket.io-client';
 
 // Project imports
 import {WorkerServer} from "./WorkerServer";
+import {AddWordMaster} from "../interfaces/AddWord";
 
 /**
  * <h1>Client Socket for socket.io Connection to Master Server</h1>
@@ -10,7 +11,7 @@ import {WorkerServer} from "./WorkerServer";
  * server.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.1.0
  * @since   2017-06-05
  */
 export class MasterClientSocket {
@@ -45,8 +46,8 @@ export class MasterClientSocket {
    * hostname and port.
    */
   public startSocketConnection(): void {
-    this.socket = new socketIOClient('http://' + this.masterHost + ':' + this.masterPort);
-    this.bindEvents(); //todo: move to constructor
+    this.socket = socketIOClient('http://' + this.masterHost + ':' + this.masterPort);
+    this.bindEvents();
   }
   
   /**
@@ -58,24 +59,41 @@ export class MasterClientSocket {
     this.socket.on('disconnect', this.disconnectEvent.bind(this));
 
     // words api events
+    this.socket.on('addWordMaster response', this.addWordMasterResponse.bind(this));
   }
   
   /**
-   * Handles the socket <code>connect</code> event by logging it to
-   * the console.
+   * Handles the socket <code>connect</code> event by running a
+   * <code>WorkerServer</code> method.
    */
   private connectEvent() {
-    console.log('Connected to master server.');
+    this.workerServer.connectedToMaster(true);
   }
   
   /**
-   * Handles the socket <code>error</code> event by logging it to the
-   * console.
-   * @param reason
+   * Handles the socket <code>disconnect</code> event by running a
+   * <code>WorkerServer</code> method.
    */
   private disconnectEvent(reason: string): void {
-    console.log('Disconnecting socket. Reason: ' + reason);
-    this.workerServer.disconnectedFromMaster();
+    this.workerServer.connectedToMaster(false, reason);
+  }
+  
+  /**
+   * Sends an add word request to the master server along with the
+   * request data about adding the word.
+   * @param req
+   */
+  public addWordMasterRequest(req: AddWordMaster) {
+    this.socket.emit('addWordMaster request', req)
+  }
+  
+  /**
+   * Handles the socket <code>addWordMaster response</code> by
+   * running a <code>WorkerServer</code> method.
+   * @param req
+   */
+  private addWordMasterResponse(req: AddWordMaster) {
+    this.workerServer.addWordMasterResponse(req);
   }
 
 }

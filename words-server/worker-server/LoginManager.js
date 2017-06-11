@@ -8,7 +8,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * sockets to logout.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.0.2
  * @since   2017-06-07
  */
 var LoginManager = (function () {
@@ -76,6 +76,20 @@ var LoginManager = (function () {
             username = this.usernames[this.sockets.indexOf(socket)];
         }
         return username;
+    };
+    /**
+     * Runs a callback function with the socket connection for each
+     * logged in user corresponding to the username provided.
+     * @param username  The username to find sockets corresponding to.
+     * @param callback  Function to be run with each user.
+     */
+    LoginManager.prototype.forEachSocketWithUsername = function (username, callback) {
+        var _this = this;
+        this.usernames.forEach(function (iUsername, index) {
+            if (iUsername === username) {
+                callback(_this.sockets[index]);
+            }
+        });
     };
     return LoginManager;
 }());

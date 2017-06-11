@@ -6,6 +6,7 @@ import {createInterface} from 'readline';
 import {LoginRequest, LoginResponse} from "../interfaces/Login";
 import {LogoutResponse} from "../interfaces/Logout";
 import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
+import {AddWordRequest, AddWordResponse} from "../interfaces/AddWord";
 
 /**
  * <h1>Client Socket API Test</h1>
@@ -13,7 +14,7 @@ import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateA
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.3.0
  * @since   2017-06-06
  */
 export class ClientSocket {
@@ -100,6 +101,16 @@ export class ClientSocket {
           } else {
             response = 'Usage: create account <username> <password>';
           }
+          break;
+          
+        case "add":
+          if (words.length >= 3 && words[1] === 'word') {
+            response = 'Attempting to add word...';
+            this.addWordRequest({word: command.replace('add word', '').trim()});
+          } else {
+            response = 'Useage: add word <word>';
+          }
+          break;
       }
     }
     console.log(response);
@@ -127,6 +138,7 @@ export class ClientSocket {
     this.socket.on('login response', this.loginResponse.bind(this));
     this.socket.on('logout response', this.logoutResponse.bind(this));
     this.socket.on('createAccount response', this.createAccountResponse.bind(this));
+    this.socket.on('addWord response', this.addWordResponse.bind(this));
   }
   
   /**
@@ -230,6 +242,32 @@ export class ClientSocket {
       console.log('Invalid password.');
     } else if (data.usernameTaken) {
       console.log('Username taken. Please try another.');
+    }
+  }
+  
+  /**
+   * Emits an add word request to the server, containing the word to
+   * be added.
+   * @param req Contains the new word.
+   */
+  private addWordRequest(req: AddWordRequest) {
+    this.socket.emit('addWord request', req);
+  }
+  
+  /**
+   * Processes the response to adding a new word. This may be after
+   * this socket added a word, in which case there may have been an
+   * error while adding the word, or the word may have been added
+   * from another socket connection somewhere in the system.
+   * @param res
+   */
+  private addWordResponse(res: AddWordResponse) {
+    if (res.success) {
+      console.log('Word "%s" added successfully.', res.word);
+    } else if (res.wordAlreadyAdded) {
+      console.log('Word already added.');
+    } else {
+      console.log('Error, word not added.');
     }
   }
 }

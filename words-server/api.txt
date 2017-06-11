@@ -23,6 +23,15 @@ Create Account
         Name:   "createAccount request"
         Data:   { username: string, password: string }
 
-    Response
+    Response:
         Name:   "createAccount response"
         Data:   { success: boolean, usernameTaken: boolean, invalidUsername?: boolean, invalidPassword?: boolean }
+
+Add Word
+    Request:
+        Name:   "addWord request"
+        Data:   { word: string }
+
+    Response:
+        Name:   "addWord response"
+        Data:   { success: boolean, word: string, isValidWord: boolean, wordAlreadyAdded: boolean }

@@ -10,6 +10,7 @@ import {LoginManager} from "./LoginManager";
 import {LogoutResponse} from "../interfaces/Logout";
 import {WordsDatabaseHandler} from "./WordsDatabaseHandler";
 import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
+import {AddWordMaster, AddWordRequest, AddWordResponse} from "../interfaces/AddWord";
 
 /**
  * <h1>Worker Server</h1>
@@ -19,7 +20,7 @@ import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateA
  * messages via the master node, which emits messages to all workers.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.3.0
  * @since   2017-06-05
  */
 export class WorkerServer {
@@ -28,6 +29,8 @@ export class WorkerServer {
   private server: any;              // The http server.
   // The client socket to the master node.
   private masterClientSocket: MasterClientSocket;
+  // Whether the socket to the server is active.
+  private masterSocketConnected: boolean;
   private loginManager: LoginManager; // Stores logged in sockets.
   // Handles user database storage.
   private dbHandler: WordsDatabaseHandler;
@@ -54,15 +57,26 @@ export class WorkerServer {
    * to attempt to connect to the head server, if there is one.
    */
   private startMasterClientSocket(): void {
+    this.masterSocketConnected = false;
     this.masterClientSocket = new MasterClientSocket(this, 'localhost', 8000);
     this.masterClientSocket.startSocketConnection();
   }
   
   /**
-   * Logs to the console when disconnected from the master node.
+   * Runs whenever the socket to the master server is connected or
+   * disconnected, updating the <code>masterSocketConnected</code>
+   * field, and logging a message explaining the socket's status to
+   * the screen.
+   * @param connected
+   * @param reason
    */
-  public disconnectedFromMaster(): void {
-    console.log('Disconnected from master server.');
+  public connectedToMaster(connected: boolean, reason?: string): void {
+    this.masterSocketConnected = connected;
+    if (connected) {
+      console.log('Connected to master server.');
+    } else {
+      console.log('Disconnected from master server. ' + reason);
+    }
   }
   
   /**
@@ -177,6 +191,22 @@ export class WorkerServer {
   }
   
   /**
+   * Checks whether the word is in a valid format.
+   * <p>
+   * A valid format required the word to be between 1 and 31
+   * characters long, containing only letters and dashes.
+   * @param word  The word to check.
+   * @returns {boolean} Whether the word is in a valid format.
+   */
+  private isValidWord(word: string): boolean {
+    if (typeof word === 'string' && word != '') {
+      let patt = new RegExp('^[a-zA-Z-]{1,31}$');
+      return patt.test(word);
+    }
+    return false
+  }
+  
+  /**
    * Uses the <code>WordsDatabaseHandler</code> to check whether the
    * login credentials provided by the user associate with those in
    * the database.
@@ -208,6 +238,15 @@ export class WorkerServer {
     return res;
   }
   
+  /**
+   * Handles the create account event. Attempts to add a new user to
+   * the database if the username and password are of a valid format.
+   * Returns details of the success of adding the new user to a
+   * callback function.
+   * @param req Contains the new username and password information.
+   * @param socket  The socket from which the request was made.
+   * @param callback  Function to be run after the request.
+   */
   public createAccountRequestEvent(req: CreateAccountRequest, socket: SocketIO.Socket, callback: (res: CreateAccountResponse) => void): void {
     let res: CreateAccountResponse= {success: false};
     res.invalidUsername = !this.isValidUsername(req.username);
@@ -223,6 +262,120 @@ export class WorkerServer {
         callback(res);
       });
     }
+  }
+  
+  /**
+   * Processes a request to add a word. Returns the success of adding
+   * a word to a callback function.
+   * @param req Contains the data for adding a new word.
+   * @param socket  The socket from which the request came.
+   */
+  public addWordRequestEvent(req: AddWordRequest, socket: SocketIO.Socket) {
+    
+    // Sets up the add word response.
+    let res: AddWordResponse = {success: false, word: req.word, isLoggedIn: false, isValidWord: false, wordAlreadyAdded: false};
+    
+    if (this.loginManager.isLoggedIn(socket)) {
+      
+      // If the user is logged in.
+      res.isLoggedIn = true;
+      
+      if (this.isValidWord(req.word)) {
+        // Tells the response that the word is in a valid format.
+        res.isValidWord = true;
+        let username = this.loginManager.getUsernameFromSocket(socket);
+        
+        // Checks whether the user has already added the word.
+        this.dbHandler.containsWord(username, req.word, (containsWord: boolean) => {
+          if (containsWord) {
+            /* If the user already has the word, then and response
+             * is send explaining so.
+             */
+            res.wordAlreadyAdded = true;
+            this.addWordResponse(socket, res);
+          } else {
+            
+            /* If the user does not have the word, then the word is
+             * added.
+             */
+            this.dbHandler.addWord(username, req.word, (addedSuccessfully: boolean) => {
+              res.success = addedSuccessfully;
+              if (addedSuccessfully) {
+                
+                /* If the word was added to the database successfully
+                 * then the request is sent to the master server and
+                 * to logged in clients with the same username.
+                 */
+                res.success = true;
+                this.addWordMasterRequest(username, res);
+                this.addWordForAllConnectedClients(username, res);
+              } else {
+                
+                /* If the word was not added to the database
+                 * successfully then the response if sent back to the
+                 * original client.
+                 */
+                this.addWordResponse(socket, res);
+              }
+            });
+          }
+        });
+      } else {
+        /* If the word is not in a valid format then the response is
+         * sent.
+         */
+        this.addWordResponse(socket, res);
+      }
+    } else {
+      
+      // If the user is not logged in.
+      this.addWordResponse(socket, res);
+    }
+  }
+  
+  /**
+   * Sends a request to the master server containing the add word
+   * data.
+   * @param username  Username of the user who added the word.
+   * @param res Contains information about adding the word.
+   */
+  private addWordMasterRequest(username: string, res: AddWordResponse) {
+    if (this.masterSocketConnected) {
+      this.masterClientSocket.addWordMasterRequest({username: username, res: res});
+    }
+  }
+  
+  /**
+   * Handles a response from the master server about a word being
+   * added. Emits a message to all connected users with the username
+   * matching that of the add word username.
+   * @param res Contains data about the new word being added.
+   */
+  public addWordMasterResponse(res: AddWordMaster) {
+    this.addWordForAllConnectedClients(res.username, res.res);
+  }
+  
+  /**
+   * Runs the <code>addWordResponse</code> method, emitting an add
+   * word response, for all logged in sockets with the username
+   * provided.
+   * @param username  The username of the user who added the word.
+   * @param res Contains information about the word which as added.
+   */
+  private addWordForAllConnectedClients(username: string, res: AddWordResponse) {
+    this.loginManager.forEachSocketWithUsername(username, (socket: SocketIO.Socket) => {
+      this.addWordResponse(socket, res);
+    });
+  }
+  
+  /**
+   * Emits a socket.io <code>addWord response</code> message to a
+   * socket, containing information about the success of the word.
+   * @param socket  The socket to send the response to.
+   * @param res Contains the information about adding the word.
+   */
+  private addWordResponse(socket: SocketIO.Socket, res: AddWordResponse) {
+    socket.emit('addWord response', res);
   }
 }
 

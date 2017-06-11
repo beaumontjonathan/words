@@ -1,14 +1,14 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // Module imports
-var socketIOClient = require('socket.io-client'); //todo: change to import
+var socketIOClient = require("socket.io-client");
 /**
  * <h1>Client Socket for socket.io Connection to Master Server</h1>
  * Contains code to handle a node server connection to the master
  * server.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.1.0
  * @since   2017-06-05
  */
 var MasterClientSocket = (function () {
@@ -30,8 +30,8 @@ var MasterClientSocket = (function () {
      * hostname and port.
      */
     MasterClientSocket.prototype.startSocketConnection = function () {
-        this.socket = new socketIOClient('http://' + this.masterHost + ':' + this.masterPort);
-        this.bindEvents(); //todo: move to constructor
+        this.socket = socketIOClient('http://' + this.masterHost + ':' + this.masterPort);
+        this.bindEvents();
     };
     /**
      * Binds the socket.io events to their respective methods.
@@ -41,22 +41,37 @@ var MasterClientSocket = (function () {
         this.socket.on('connect', this.connectEvent.bind(this));
         this.socket.on('disconnect', this.disconnectEvent.bind(this));
         // words api events
+        this.socket.on('addWordMaster response', this.addWordMasterResponse.bind(this));
     };
     /**
-     * Handles the socket <code>connect</code> event by logging it to
-     * the console.
+     * Handles the socket <code>connect</code> event by running a
+     * <code>WorkerServer</code> method.
      */
     MasterClientSocket.prototype.connectEvent = function () {
-        console.log('Connected to master server.');
+        this.workerServer.connectedToMaster(true);
     };
     /**
-     * Handles the socket <code>error</code> event by logging it to the
-     * console.
-     * @param reason
+     * Handles the socket <code>disconnect</code> event by running a
+     * <code>WorkerServer</code> method.
      */
     MasterClientSocket.prototype.disconnectEvent = function (reason) {
-        console.log('Disconnecting socket. Reason: ' + reason);
-        this.workerServer.disconnectedFromMaster();
+        this.workerServer.connectedToMaster(false, reason);
+    };
+    /**
+     * Sends an add word request to the master server along with the
+     * request data about adding the word.
+     * @param req
+     */
+    MasterClientSocket.prototype.addWordMasterRequest = function (req) {
+        this.socket.emit('addWordMaster request', req);
+    };
+    /**
+     * Handles the socket <code>addWordMaster response</code> by
+     * running a <code>WorkerServer</code> method.
+     * @param req
+     */
+    MasterClientSocket.prototype.addWordMasterResponse = function (req) {
+        this.workerServer.addWordMasterResponse(req);
     };
     return MasterClientSocket;
 }());

@@ -6,12 +6,12 @@
  * sockets to logout.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.0.2
  * @since   2017-06-07
  */
 export class LoginManager {
   
-  private sockets: SocketIO.Socket[];      // Holds the of logged in sockets.
+  private sockets: SocketIO.Socket[]; // Holds the of logged in sockets.
   private usernames: string[]; //Holds the of logged in usernames.
   
   /**
@@ -29,7 +29,7 @@ export class LoginManager {
    *              status of.
    * @returns {boolean} Whether the user has logged in.
    */
-  public isLoggedIn(data: any): boolean {
+  public isLoggedIn(data: SocketIO.Socket|string): boolean {
     
     // If the data is a username.
     if (typeof data === 'string') {
@@ -84,4 +84,17 @@ export class LoginManager {
     return username;
   }
   
+  /**
+   * Runs a callback function with the socket connection for each
+   * logged in user corresponding to the username provided.
+   * @param username  The username to find sockets corresponding to.
+   * @param callback  Function to be run with each user.
+   */
+  public forEachSocketWithUsername(username: string, callback: (socket: SocketIO.Socket) => void) {
+    this.usernames.forEach((iUsername: string, index: number) => {
+      if (iUsername === username) {
+        callback(this.sockets[index]);
+      }
+    });
+  }
 }

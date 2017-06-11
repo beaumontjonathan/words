@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * requests.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.3.0
  * @since   2017-06-05
  */
 var ClientSocket = (function () {
@@ -33,6 +33,7 @@ var ClientSocket = (function () {
         this.socket.on('login request', this.loginRequestEvent.bind(this));
         this.socket.on('logout request', this.logoutRequestEvent.bind(this));
         this.socket.on('createAccount request', this.createAccountEvent.bind(this));
+        this.socket.on('addWord request', this.addWordRequestEvent.bind(this));
     };
     /**
      * Handles the socket <code>disconnect</code> event by logging it
@@ -82,6 +83,15 @@ var ClientSocket = (function () {
         this.workerServer.createAccountRequestEvent(req, this.socket, function (res) {
             _this.socket.emit('createAccount response', res);
         });
+    };
+    /**
+     * Handles the socket <code>addWord request</code> event by passing
+     * the request data to the <code>WorkerServer</code> method to
+     * process.
+     * @param req Contains the add word data.
+     */
+    ClientSocket.prototype.addWordRequestEvent = function (req) {
+        this.workerServer.addWordRequestEvent(req, this.socket);
     };
     return ClientSocket;
 }());
