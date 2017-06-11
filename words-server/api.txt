@@ -35,3 +35,12 @@ Add Word
     Response:
         Name:   "addWord response"
         Data:   { success: boolean, word: string, isValidWord: boolean, wordAlreadyAdded: boolean }
+
+Add Word Master
+    Request:
+        Name:   "addWordMaster request"
+        Data:   { username: string, res: AddWordResponse }
+
+    Response:
+        Name:   "addWordMaster response"
+        Data:   { username: string, res: AddWordResponse }
