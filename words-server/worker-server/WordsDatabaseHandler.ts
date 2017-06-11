@@ -1,6 +1,7 @@
 // Module imports
 import {createPool, IConnection, IError, IPool} from "mysql";
 import {hash, compare} from 'bcrypt';
+import {Word} from "../interfaces/Word";
 
 // Database login details.
 const DATABASE_HOST = 'odroid-c2';
@@ -23,15 +24,24 @@ export class WordsDatabaseHandler {
   
   static readonly DATABASE_NAME = 'words';  // Name of the database.
   
-  static readonly TABLE_USERS =  'users'; // Name of the users table.
-  static readonly USERS_FIELD_ID = 'id';  // User id field.
-  static readonly USERS_FIELD_USERNAME = 'username';  // Username field.
-  static readonly USERS_FIELD_PASSWORD = 'password';  // Password field.
-  
-  static readonly TABLE_WORDS = 'words';  // Name of the words table.
-  static readonly WORDS_FIELD_ID = 'id';  // Word id field
-  static readonly WORDS_FIELD_USERID = 'userId'; // User id field.
-  static readonly WORDS_FIELD_WORD = 'word';  // Word
+  static readonly TABLE = {
+    USERS: {
+      NAME: 'users',
+      FIELD: {
+        ID: 'id',
+        USERNAME: 'username',
+        PASSWORD: 'password'
+      }
+    },
+    WORDS: {
+      NAME: 'words',
+      FIELD: {
+        ID: 'id',
+        USERID: 'userId',
+        WORD: 'word'
+      }
+    }
+  };
   
   private pool: IPool;  // Stores the database pool.
   
@@ -65,7 +75,7 @@ export class WordsDatabaseHandler {
       // Hash the password.
       hash(password, 10)
         .then(hash => {
-          let statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE_USERS +' (' + WordsDatabaseHandler.USERS_FIELD_USERNAME + ', ' + WordsDatabaseHandler.USERS_FIELD_PASSWORD + ') VALUES (?, ?)';
+          let statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE.USERS.NAME +' (' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ', ' + WordsDatabaseHandler.TABLE.USERS.FIELD.PASSWORD+ ') VALUES (?, ?)';
           
           // Queries the database with an add user query.
           conn.query(statement, [username, hash], (err: IError, res) => {
@@ -109,7 +119,7 @@ export class WordsDatabaseHandler {
         if (callback)
           callback(false);
       } else {
-        let statement = 'DELETE FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + WordsDatabaseHandler.USERS_FIELD_USERNAME + '=?';
+        let statement = 'DELETE FROM ' + WordsDatabaseHandler.TABLE.USERS + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + '=?';
         
         // Attempt to delete the user from the database.
         conn.query(statement, username, (err: IError, res) => {
@@ -147,10 +157,10 @@ export class WordsDatabaseHandler {
       /* If the field if not the if or username, return false to the
        * callback function.
        */
-      if (field !== WordsDatabaseHandler.USERS_FIELD_ID && field !== WordsDatabaseHandler.USERS_FIELD_USERNAME) {
+      if (field !== WordsDatabaseHandler.TABLE.USERS.FIELD.ID && field !== WordsDatabaseHandler.TABLE.USERS.FIELD.ID) {
         callback(false);
       }
-      let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + field + '=?';
+      let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + field + '=?';
       
       // Attempt the query.
       conn.query(statement, data, (err: IError, res) => {
@@ -182,7 +192,7 @@ export class WordsDatabaseHandler {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       
-      let statement = 'SELECT ' + WordsDatabaseHandler.USERS_FIELD_ID + ' from ' + WordsDatabaseHandler.TABLE_USERS + ' where username=?';
+      let statement = 'SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' from ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' where username = ?';
       
       conn.query(statement, username, (err: IError, res) => {
         conn.release();
@@ -212,7 +222,7 @@ export class WordsDatabaseHandler {
   public verifyCredentials(username: string, password: string, callback: (correctUsername: boolean, correctPassword?: boolean) => void): void {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
-      let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + WordsDatabaseHandler.USERS_FIELD_USERNAME + '=?';
+      let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + '=?';
       
       // Runs the fetch query.
       conn.query(statement, username, (err: IError, res) => {
@@ -255,26 +265,14 @@ export class WordsDatabaseHandler {
    * @param callback  Function to be run after the word is added.
    */
   public addWord(username: string, word: string, callback: (success: boolean) => void) {
-    this.getIdFromUsername(username, (userId: number) => {
-      if (typeof userId === 'undefined') {
-        callback(false);
-      } else {
-        this.pool.getConnection((err: IError, conn: IConnection) => {
-          if (err) throw err;
-          
-          let statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE_WORDS + ' (' + WordsDatabaseHandler.WORDS_FIELD_USERID + ', ' + WordsDatabaseHandler.WORDS_FIELD_WORD + ') VALUES (?, ?)';
-          
-          conn.query(statement, [userId, word], (err: IError, res) => {
-            if (err) {
-              callback(false);
-            } else if (typeof res === 'object' && res.affectedRows === 1) {
-              callback (true);
-            } else {
-              callback(false);
-            }
-          });
-        })
-      }
+    this.pool.getConnection((err: IError, conn: IConnection) => {
+      if (err) throw err;
+      
+      let statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' (' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ', ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ') VALUES (' +
+          '(SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ? LIMIT 1), ?)'
+      conn.query(statement, [username, word], (err: IError, res) => {
+        callback(typeof res === 'object' && res.affectedRows === 1);
+      });
     });
   }
   
@@ -290,12 +288,62 @@ export class WordsDatabaseHandler {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       let statement =
-        'DELETE FROM ' + WordsDatabaseHandler.TABLE_WORDS +
-        ' WHERE ' + WordsDatabaseHandler.WORDS_FIELD_USERID + ' = (' +
-          'SELECT ' + WordsDatabaseHandler.USERS_FIELD_ID + ' FROM ' + WordsDatabaseHandler.TABLE_USERS + ' WHERE ' + WordsDatabaseHandler.USERS_FIELD_USERNAME + ' = ?)' +
-        ' AND ' + WordsDatabaseHandler.WORDS_FIELD_WORD + ' = ?';
+        'DELETE FROM ' + WordsDatabaseHandler.TABLE.WORDS.NAME +
+        ' WHERE ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ' = (' +
+          'SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?)' +
+        ' AND ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ' = ?';
       conn.query(statement, [username, word], (err: IError, res) => {
         callback(typeof res === 'object' && res.affectedRows > 0);
+      });
+    });
+  }
+  
+  /**
+   * Deletes all words corresponding to a user. Returns the number of
+   * deleted rows to a callback function.
+   * @param username  // Username of the user.
+   * @param callback  // Function to be run after delete operation.
+   */
+  public deleteAllWords(username: string, callback: (affectedRows: number) => void) {
+    this.pool.getConnection((err: IError, conn: IConnection) => {
+      if (err) throw err;
+      let statement = 'DELETE FROM ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ' = (' +
+          'SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?' +
+          ')';
+      conn.query(statement, username, (err: IError, res) => {
+        if (typeof res === 'object' && typeof res.affectedRows !== 'undefined') {
+          callback(res.affectedRows);
+        } else {
+          callback(0);
+        }
+      })
+    });
+  }
+  
+  /**
+   * Fetches all words corresponding to a user and returns them as an
+   * array of <code>Word</code> elements to a callback function.
+   * @param username  The username of the user.
+   * @param callback  Function to be run after select operation.
+   */
+  public getAllWords(username: string , callback: (words: Word[]) => void) {
+    this.pool.getConnection((err: IError, conn: IConnection) => {
+      let words: Word[] = [];
+      if (err) throw err;
+      let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ' = (SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?)';
+      conn.query(statement, username, (err:IError, res) => {
+        if (typeof res === 'object') {
+          if (res.length <= 0) {
+            callback(words);
+          } else {
+            for (let i = 0, length = res.length; i < length; i++) {
+              words.push({id: res[i].id, word: res[i].word});
+              if (i === length - 1) {
+                callback(words);
+              }
+            }
+          }
+        }
       });
     });
   }
