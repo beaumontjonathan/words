@@ -16,7 +16,7 @@ var DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.1.0
  * @since   2017-06-08
  */
 var WordsDatabaseHandler = (function () {
