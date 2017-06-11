@@ -17,7 +17,7 @@ const DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1
  * @since   2017-06-08
  */
 export class WordsDatabaseHandler {
@@ -144,7 +144,8 @@ export class WordsDatabaseHandler {
   }
   
   /**
-   * Returns whether or not a user exists in the database.
+   * Returns whether or not a user exists in the database to a
+   * callback function.
    * @param field The field to check by. Either the id or the
    *              username.
    * @param data  The username or id of the user.
@@ -344,6 +345,25 @@ export class WordsDatabaseHandler {
             }
           }
         }
+      });
+    });
+  }
+  
+  /**
+   * Returns whether or not a user knows a word to a callback
+   * function.
+   * @param username  The username of the user.
+   * @param word      The word that the user might know.
+   * @param callback  Function to be run after the check.
+   */
+  public containsWord(username: string, word: string, callback: (success: boolean) => void) {
+    this.pool.getConnection((err: IError, conn: IConnection) => {
+      if (err) throw err;
+      let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ' = (' +
+          'SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?' +
+          ') AND ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ' = ?';
+      conn.query(statement, [username, word], (err:IError, res) => {
+        callback(typeof res === 'object' && res.length > 0);
       });
     });
   }

@@ -16,7 +16,7 @@ var DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1
  * @since   2017-06-08
  */
 var WordsDatabaseHandler = (function () {
@@ -113,7 +113,8 @@ var WordsDatabaseHandler = (function () {
         });
     };
     /**
-     * Returns whether or not a user exists in the database.
+     * Returns whether or not a user exists in the database to a
+     * callback function.
      * @param field The field to check by. Either the id or the
      *              username.
      * @param data  The username or id of the user.
@@ -312,6 +313,25 @@ var WordsDatabaseHandler = (function () {
                         }
                     }
                 }
+            });
+        });
+    };
+    /**
+     * Returns whether or not a user knows a word to a callback
+     * function.
+     * @param username  The username of the user.
+     * @param word      The word that the user might know.
+     * @param callback  Function to be run after the check.
+     */
+    WordsDatabaseHandler.prototype.containsWord = function (username, word, callback) {
+        this.pool.getConnection(function (err, conn) {
+            if (err)
+                throw err;
+            var statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ' = (' +
+                'SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?' +
+                ') AND ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ' = ?';
+            conn.query(statement, [username, word], function (err, res) {
+                callback(typeof res === 'object' && res.length > 0);
             });
         });
     };
