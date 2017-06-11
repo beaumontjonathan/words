@@ -1,6 +1,8 @@
 // Module imports
 import {createPool, IConnection, IError, IPool} from "mysql";
 import {hash, compare} from 'bcrypt';
+
+// Project imports
 import {Word} from "../interfaces/Word";
 
 // Database login details.
@@ -17,13 +19,14 @@ const DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.1
+ * @version 1.1.2
  * @since   2017-06-08
  */
 export class WordsDatabaseHandler {
   
   static readonly DATABASE_NAME = 'words';  // Name of the database.
   
+  // Contains names of fields and tables in the words database.
   static readonly TABLE = {
     USERS: {
       NAME: 'users',

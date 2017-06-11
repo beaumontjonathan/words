@@ -16,7 +16,7 @@ var DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.1
+ * @version 1.1.2
  * @since   2017-06-08
  */
 var WordsDatabaseHandler = (function () {
@@ -338,6 +338,7 @@ var WordsDatabaseHandler = (function () {
     return WordsDatabaseHandler;
 }());
 WordsDatabaseHandler.DATABASE_NAME = 'words'; // Name of the database.
+// Contains names of fields and tables in the words database.
 WordsDatabaseHandler.TABLE = {
     USERS: {
         NAME: 'users',
