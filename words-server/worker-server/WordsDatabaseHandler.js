@@ -189,6 +189,7 @@ var WordsDatabaseHandler = (function () {
      * @param callback  Function to be run after the check.
      */
     WordsDatabaseHandler.prototype.verifyCredentials = function (username, password, callback) {
+        console.log('final');
         this.pool.getConnection(function (err, conn) {
             if (err)
                 throw err;

@@ -200,7 +200,7 @@ export class ClientSocket {
    * Emits a login request to the server.
    * @param loginData The username and password for the user.
    */
-  private loginRequest(loginData: LoginRequest) {
+  private loginRequest(loginData: LoginRequest): void {
     this.socket.emit('login request', loginData);
   }
   
@@ -208,7 +208,7 @@ export class ClientSocket {
    * Processes the response to the login request.
    * @param data  Contains data about the success of the login.
    */
-  private loginResponse(data: LoginResponse) {
+  private loginResponse(data: LoginResponse): void {
     if (data.success) {
       console.log('Login successful.');
     } else if (data.alreadyLoggedIn) {
@@ -227,7 +227,7 @@ export class ClientSocket {
   /**
    * Emits a logout request to the server.
    */
-  private logoutRequest() {
+  private logoutRequest(): void {
     this.socket.emit('logout request');
   }
   
@@ -235,7 +235,7 @@ export class ClientSocket {
    * Processes the response to the logout request.
    * @param data  Contains data about the success of the logout.
    */
-  private logoutResponse(data: LogoutResponse) {
+  private logoutResponse(data: LogoutResponse): void {
     if (data.success) {
       console.log('Logout successful.');
     } else if (data.wasLoggedIn) {
@@ -250,7 +250,7 @@ export class ClientSocket {
    * username and password information.
    * @param data  Contains the new username and password.
    */
-  private createAccountRequest(data: CreateAccountRequest) {
+  private createAccountRequest(data: CreateAccountRequest): void {
     this.socket.emit('createAccount request', data);
   }
   
@@ -259,7 +259,7 @@ export class ClientSocket {
    * @param data  Contains data about the success of the account
    *              creation attempt.
    */
-  private createAccountResponse(data: CreateAccountResponse) {
+  private createAccountResponse(data: CreateAccountResponse): void {
     if (data.success) {
       console.log('Account successfully created.');
     } else if (data.invalidUsername) {
@@ -276,7 +276,7 @@ export class ClientSocket {
    * be added.
    * @param req Contains the new word.
    */
-  private addWordRequest(req: AddWordRequest) {
+  private addWordRequest(req: AddWordRequest): void {
     this.socket.emit('addWord request', req);
   }
   
@@ -287,7 +287,7 @@ export class ClientSocket {
    * from another socket connection somewhere in the system.
    * @param res Contains information about the word addition.
    */
-  private addWordResponse(res: AddWordResponse) {
+  private addWordResponse(res: AddWordResponse): void {
     //todo notLoggedIn
     if (res.success) {
       console.log('Word "%s" added successfully.', res.word);
@@ -303,7 +303,7 @@ export class ClientSocket {
    * to be removed.
    * @param req Contains the word to be removed.
    */
-  private removeWordRequest(req: RemoveWordRequest) {
+  private removeWordRequest(req: RemoveWordRequest): void {
     this.socket.emit('removeWord request', req);
   }
   
@@ -314,7 +314,7 @@ export class ClientSocket {
    * added from another socket connected somewhere else.
    * @param res Contains information about the word removal.
    */
-  private removeWordResponse(res: RemoveWordResponse) {
+  private removeWordResponse(res: RemoveWordResponse): void {
     if (res.success) {
       console.log('Word "%s" successfully removed.', res.word);
     } else if (!res.isLoggedIn) {
@@ -331,7 +331,7 @@ export class ClientSocket {
   /**
    * Emits a get words request to the server.
    */
-  private getWordsRequest() {
+  private getWordsRequest(): void {
     this.socket.emit('getWords request')
   }
   
@@ -342,7 +342,7 @@ export class ClientSocket {
    * request was not successful; e.g. the user wasn't logged in.
    * @param res Contains information about the get words response.
    */
-  private getWordsResponse(res: GetWordsResponse) {
+  private getWordsResponse(res: GetWordsResponse): void {
     if (res.success) {
       if (res.words.length > 0) {
         console.log('Your words:');

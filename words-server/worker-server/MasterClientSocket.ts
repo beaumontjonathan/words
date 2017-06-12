@@ -68,7 +68,7 @@ export class MasterClientSocket {
    * Handles the socket <code>connect</code> event by running a
    * <code>WorkerServer</code> method.
    */
-  private connectEvent() {
+  private connectEvent(): void {
     this.workerServer.connectedToMaster(true);
   }
   
@@ -87,7 +87,7 @@ export class MasterClientSocket {
    * request data about adding the word.
    * @param req Contains the add word information.
    */
-  public addWordMasterRequest(req: AddWordMaster) {
+  public addWordMasterRequest(req: AddWordMaster): void {
     this.socket.emit('addWordMaster request', req)
   }
   
@@ -96,7 +96,7 @@ export class MasterClientSocket {
    * running a <code>WorkerServer</code> method.
    * @param res Contains the add word information.
    */
-  private addWordMasterResponse(res: AddWordMaster) {
+  private addWordMasterResponse(res: AddWordMaster): void {
     this.workerServer.addWordMasterResponse(res);
   }
   
@@ -105,7 +105,7 @@ export class MasterClientSocket {
    * request data about removing the word.
    * @param req Contains the add word information.
    */
-  public removeWordMasterRequest(req: RemoveWordMaster) {
+  public removeWordMasterRequest(req: RemoveWordMaster): void {
     this.socket.emit('removeWordMaster request', req);
   }
   
@@ -114,7 +114,7 @@ export class MasterClientSocket {
    * running a <code>WorkerServer</code> method.
    * @param res Contains the remove word information.
    */
-  private removeWordMasterResponse(res: RemoveWordMaster) {
+  private removeWordMasterResponse(res: RemoveWordMaster): void {
     this.workerServer.removeWordMasterResponse(res);
   }
 

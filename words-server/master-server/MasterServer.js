@@ -56,3 +56,4 @@ exports.MasterServer = MasterServer;
  * port 8000.
  */
 var server = new MasterServer(8000);
+//# sourceMappingURL=MasterServer.js.map

@@ -273,7 +273,7 @@ export class WorkerServer {
    * @param req Contains the data for adding a new word.
    * @param socket  The socket from which the request came.
    */
-  public addWordRequestEvent(req: AddWordRequest, socket: SocketIO.Socket) {
+  public addWordRequestEvent(req: AddWordRequest, socket: SocketIO.Socket): void {
     
     // Sets up the add word response.
     let res: AddWordResponse = {success: false, word: req.word, isLoggedIn: false, isValidWord: false, wordAlreadyAdded: false};
@@ -342,7 +342,7 @@ export class WorkerServer {
    * @param username  Username of the user who added the word.
    * @param res Contains information about adding the word.
    */
-  private addWordMasterRequest(username: string, res: AddWordResponse) {
+  private addWordMasterRequest(username: string, res: AddWordResponse): void {
     if (this.masterSocketConnected) {
       this.masterClientSocket.addWordMasterRequest({username: username, res: res});
     }
@@ -354,7 +354,7 @@ export class WorkerServer {
    * matching that of the add word username.
    * @param res Contains data about the new word being added.
    */
-  public addWordMasterResponse(res: AddWordMaster) {
+  public addWordMasterResponse(res: AddWordMaster): void {
     this.addWordForAllConnectedClients(res.username, res.res);
   }
   
@@ -365,7 +365,7 @@ export class WorkerServer {
    * @param username  The username of the user who added the word.
    * @param res Contains information about the word which as added.
    */
-  private addWordForAllConnectedClients(username: string, res: AddWordResponse) {
+  private addWordForAllConnectedClients(username: string, res: AddWordResponse): void {
     this.loginManager.forEachSocketWithUsername(username, (socket: SocketIO.Socket) => {
       this.addWordResponse(socket, res);
     });
@@ -377,7 +377,7 @@ export class WorkerServer {
    * @param socket  The socket to send the response to.
    * @param res Contains the information about adding the word.
    */
-  private addWordResponse(socket: SocketIO.Socket, res: AddWordResponse) {
+  private addWordResponse(socket: SocketIO.Socket, res: AddWordResponse): void {
     socket.emit('addWord response', res);
   }
   
@@ -387,7 +387,7 @@ export class WorkerServer {
    * @param req Contains the data for adding a new word.
    * @param socket  The socket from which the request came.
    */
-  public removeWordRequestEvent(req: RemoveWordRequest, socket: SocketIO.Socket) {
+  public removeWordRequestEvent(req: RemoveWordRequest, socket: SocketIO.Socket): void {
     
     // Sets up the remove word response.
     let res: RemoveWordResponse = {success: false, word: req.word, isLoggedIn: false, isValidWord: false, wordNotYetAdded: true};
@@ -441,7 +441,7 @@ export class WorkerServer {
    * @param username  Username of the user who removed the word.
    * @param res Contains information about removing the word.
    */
-  private removeWordMasterRequest(username: string, res: RemoveWordResponse) {
+  private removeWordMasterRequest(username: string, res: RemoveWordResponse): void {
     if (this.masterSocketConnected) {
       this.masterClientSocket.removeWordMasterRequest({username: username, res: res});
     }
@@ -453,7 +453,7 @@ export class WorkerServer {
    * username matching that of the remove word username.
    * @param res Contains the data about the word being removed.
    */
-  public removeWordMasterResponse(res: RemoveWordMaster) {
+  public removeWordMasterResponse(res: RemoveWordMaster): void {
     this.removeWorkForAllConnectedClients(res.username, res.res);;
   }
   
@@ -464,7 +464,7 @@ export class WorkerServer {
    * @param username  The username of the user who removed the word.
    * @param res Contains information about the word being removed.
    */
-  private removeWorkForAllConnectedClients(username: string, res: RemoveWordResponse) {
+  private removeWorkForAllConnectedClients(username: string, res: RemoveWordResponse): void {
     this.loginManager.forEachSocketWithUsername(username, (socket: SocketIO.Socket) => {
       this.removeWordResponse(socket, res);
     });
@@ -477,7 +477,7 @@ export class WorkerServer {
    * @param socket  The socket to send the response to.
    * @param res Contains the information about the word.
    */
-  private removeWordResponse(socket: SocketIO.Socket, res: RemoveWordResponse) {
+  private removeWordResponse(socket: SocketIO.Socket, res: RemoveWordResponse): void {
     socket.emit('removeWord response', res);
   }
   
@@ -487,7 +487,7 @@ export class WorkerServer {
    * a suitable response to the socket.
    * @param socket  the socket from which the request came.
    */
-  public getWordRequestEvent(socket: SocketIO.Socket) {
+  public getWordRequestEvent(socket: SocketIO.Socket): void {
     let res: GetWordsResponse = {success: false, isLoggedIn: false};
     if (this.loginManager.isLoggedIn(socket)) {
       // Socket client is logged in.
@@ -513,7 +513,7 @@ export class WorkerServer {
    * @param socket  The socket to send that response to.
    * @param res Contains response information for the request.
    */
-  private getWordsResponse(socket: SocketIO.Socket, res: GetWordsResponse) {
+  private getWordsResponse(socket: SocketIO.Socket, res: GetWordsResponse): void {
     socket.emit('getWords response', res);
   }
 }

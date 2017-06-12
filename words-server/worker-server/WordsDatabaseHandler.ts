@@ -193,7 +193,7 @@ export class WordsDatabaseHandler {
    * @param username  The username to find the id of.
    * @param callback  Function to be run after the id has been found.
    */
-  public getIdFromUsername(username: string, callback: (id: number) => void) {
+  public getIdFromUsername(username: string, callback: (id: number) => void): void {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       
@@ -225,6 +225,7 @@ export class WordsDatabaseHandler {
    * @param callback  Function to be run after the check.
    */
   public verifyCredentials(username: string, password: string, callback: (correctUsername: boolean, correctPassword?: boolean) => void): void {
+    console.log('final');
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + '=?';
@@ -269,7 +270,7 @@ export class WordsDatabaseHandler {
    * @param word      The word to be added.
    * @param callback  Function to be run after the word is added.
    */
-  public addWord(username: string, word: string, callback: (success: boolean) => void) {
+  public addWord(username: string, word: string, callback: (success: boolean) => void): void {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       
@@ -289,7 +290,7 @@ export class WordsDatabaseHandler {
    * @param word      The word to remove.
    * @param callback  Function to be run after the word is removed.
    */
-  public deleteWord(username: string, word: string, callback: (success: boolean) => void) {
+  public deleteWord(username: string, word: string, callback: (success: boolean) => void): void {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       let statement =
@@ -309,7 +310,7 @@ export class WordsDatabaseHandler {
    * @param username  // Username of the user.
    * @param callback  // Function to be run after delete operation.
    */
-  public deleteAllWords(username: string, callback: (affectedRows: number) => void) {
+  public deleteAllWords(username: string, callback: (affectedRows: number) => void): void {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       let statement = 'DELETE FROM ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ' = (' +
@@ -331,7 +332,7 @@ export class WordsDatabaseHandler {
    * @param username  The username of the user.
    * @param callback  Function to be run after select operation.
    */
-  public getAllWords(username: string , callback: (words: Word[]) => void) {
+  public getAllWords(username: string , callback: (words: Word[]) => void): void {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       let words: Word[] = [];
       if (err) throw err;
@@ -360,7 +361,7 @@ export class WordsDatabaseHandler {
    * @param word      The word that the user might know.
    * @param callback  Function to be run after the check.
    */
-  public containsWord(username: string, word: string, callback: (success: boolean) => void) {
+  public containsWord(username: string, word: string, callback: (success: boolean) => void): void {
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ' = (' +

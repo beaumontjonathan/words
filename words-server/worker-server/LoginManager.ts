@@ -90,7 +90,7 @@ export class LoginManager {
    * @param username  The username to find sockets corresponding to.
    * @param callback  Function to be run with each user.
    */
-  public forEachSocketWithUsername(username: string, callback: (socket: SocketIO.Socket) => void) {
+  public forEachSocketWithUsername(username: string, callback: (socket: SocketIO.Socket) => void): void {
     this.usernames.forEach((iUsername: string, index: number) => {
       if (iUsername === username) {
         callback(this.sockets[index]);

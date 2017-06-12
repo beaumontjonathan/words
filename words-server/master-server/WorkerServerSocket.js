@@ -70,3 +70,4 @@ var WorkerServerSocket = (function () {
     return WorkerServerSocket;
 }());
 exports.WorkerServerSocket = WorkerServerSocket;
+//# sourceMappingURL=WorkerServerSocket.js.map

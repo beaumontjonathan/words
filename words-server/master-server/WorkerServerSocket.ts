@@ -34,7 +34,7 @@ export class WorkerServerSocket {
   /**
    * Binds the socket.io events to their respective methods.
    */
-  private bindEvents() {
+  private bindEvents(): void {
     // socket.io api events
     this.socket.on('disconnect', this.disconnectEvent.bind(this));
     this.socket.on('error', this.errorEvent.bind(this));
@@ -49,7 +49,7 @@ export class WorkerServerSocket {
    * to the console.
    * @param reason The string reason for the socket disconnecting
    */
-  private disconnectEvent(reason: string) {
+  private disconnectEvent(reason: string): void {
     console.log('Disconnecting socket. Reason: ' + reason);
   }
 
@@ -58,7 +58,7 @@ export class WorkerServerSocket {
    * the console.
    * @param error The socket error.
    */
-  private errorEvent(error: object) {
+  private errorEvent(error: object): void {
     console.log('Socket error: ');
     console.log(error);
   }
@@ -68,7 +68,7 @@ export class WorkerServerSocket {
    * broadcasting the request to all other worker servers.
    * @param req Contains the add word information.
    */
-  private addWordEvent(req: AddWordMaster) {
+  private addWordEvent(req: AddWordMaster): void {
     this.socket.broadcast.emit('addWordMaster response', req);
   }
   
@@ -77,7 +77,7 @@ export class WorkerServerSocket {
    * by broadcasting the request to all other worker servers.
    * @param req Contains the remove word information.
    */
-  private removeWordEvent(req: RemoveWordMaster) {
+  private removeWordEvent(req: RemoveWordMaster): void {
     this.socket.broadcast.emit('removeWordMaster response', req);
     console.log('removing word');
   }
