@@ -1,4 +1,6 @@
+// Project imports
 import {SocketResponse} from "./Response";
+
 /**
  * <h1>Add Word Request</h1>
  * Contains the word field necessary for a word add request.

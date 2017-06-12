@@ -9,7 +9,7 @@ var readline_1 = require("readline");
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.3.0
+ * @version 1.4.0
  * @since   2017-06-06
  */
 var ClientSocket = (function () {
@@ -29,12 +29,12 @@ var ClientSocket = (function () {
      * to process.
      */
     ClientSocket.prototype.startAcceptingLines = function () {
-        var readLine = readline_1.createInterface({
+        readline_1.createInterface({
             input: process.stdin,
             output: process.stdout,
             terminal: false
-        });
-        readLine.on('line', this.processCommand.bind(this));
+        })
+            .on('line', this.processCommand.bind(this));
     };
     /**
      * Takes a command from the user and determines the action to carry
@@ -87,13 +87,24 @@ var ClientSocket = (function () {
                         response = 'Usage: create account <username> <password>';
                     }
                     break;
+                // Add word command
                 case "add":
-                    if (words.length >= 3 && words[1] === 'word') {
+                    if (words.length === 3 && words[1] === 'word') {
                         response = 'Attempting to add word...';
-                        this.addWordRequest({ word: command.replace('add word', '').trim() });
+                        this.addWordRequest({ word: command.replace('add word ', '').trim() });
                     }
                     else {
-                        response = 'Useage: add word <word>';
+                        response = 'Usage: add word <word>';
+                    }
+                    break;
+                // Remove word command
+                case "remove":
+                    if (words.length === 3 && words[1] === 'word') {
+                        response = 'Attempting to remove word...';
+                        this.removeWordRequest({ word: command.replace('remove word ', '').trim() });
+                    }
+                    else {
+                        response = 'Usage: remove word <word>';
                     }
                     break;
             }
@@ -121,6 +132,7 @@ var ClientSocket = (function () {
         this.socket.on('logout response', this.logoutResponse.bind(this));
         this.socket.on('createAccount response', this.createAccountResponse.bind(this));
         this.socket.on('addWord response', this.addWordResponse.bind(this));
+        this.socket.on('removeWord response', this.removeWordResponse.bind(this));
     };
     /**
      * Handles the socket <code>connect</code event by logging it to
@@ -240,7 +252,7 @@ var ClientSocket = (function () {
      * this socket added a word, in which case there may have been an
      * error while adding the word, or the word may have been added
      * from another socket connection somewhere in the system.
-     * @param res
+     * @param res Contains information about the word addition.
      */
     ClientSocket.prototype.addWordResponse = function (res) {
         if (res.success) {
@@ -253,6 +265,35 @@ var ClientSocket = (function () {
             console.log('Error, word not added.');
         }
     };
+    /**
+     * Emits a remove word request to the server, containing the word
+     * to be removed.
+     * @param req Contains the word to be removed.
+     */
+    ClientSocket.prototype.removeWordRequest = function (req) {
+        this.socket.emit('removeWord request', req);
+    };
+    /**
+     * Processes the response to remove the word. This may be after
+     * this socket removed a word, in which case there may have been
+     * and error while removing the word, or the word may have been
+     * added from another socket connected somewhere else.
+     * @param res Contains information about the word removal.
+     */
+    ClientSocket.prototype.removeWordResponse = function (res) {
+        if (res.success) {
+            console.log('Word "%s" successfully removed.', res.word);
+        }
+        else if (!res.isValidWord) {
+            console.log('Invalid word.');
+        }
+        else if (res.wordNotYetAdded) {
+            console.log('Word not yet removed.');
+        }
+        else {
+            console.log('Remove word failure.');
+        }
+    };
     return ClientSocket;
 }());
 exports.ClientSocket = ClientSocket;
@@ -260,4 +301,3 @@ exports.ClientSocket = ClientSocket;
  * being respectively the cli arguments.
  */
 new ClientSocket(process.argv[2], parseInt(process.argv[3])).startSocketConnection();
-//# sourceMappingURL=ClientSocket.js.map

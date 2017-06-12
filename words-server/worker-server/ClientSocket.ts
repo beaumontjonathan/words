@@ -4,6 +4,7 @@ import {LoginRequest, LoginResponse} from "../interfaces/Login";
 import {LogoutResponse} from "../interfaces/Logout";
 import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
 import {AddWordRequest} from "../interfaces/AddWord";
+import {RemoveWordRequest} from "../interfaces/RemoveWord";
 
 /**
  * <h1>Worker Server Client socket.io Socket Wrapper</h1>
@@ -12,7 +13,7 @@ import {AddWordRequest} from "../interfaces/AddWord";
  * requests.
  *
  * @author  Jonathan Beaumont
- * @version 1.3.0
+ * @version 1.4.0
  * @since   2017-06-05
  */
 export class ClientSocket {
@@ -45,6 +46,7 @@ export class ClientSocket {
     this.socket.on('logout request', this.logoutRequestEvent.bind(this));
     this.socket.on('createAccount request', this.createAccountEvent.bind(this));
     this.socket.on('addWord request', this.addWordRequestEvent.bind(this));
+    this.socket.on('removeWord request', this.removeWordRequestEvent.bind(this));
   }
   
   /**
@@ -107,5 +109,15 @@ export class ClientSocket {
    */
   private addWordRequestEvent(req: AddWordRequest): void {
     this.workerServer.addWordRequestEvent(req, this.socket);
+  }
+  
+  /**
+   * Handles the socket <code>removeWord request</code> event by
+   * passing the request data to the <code>WorkerServer</code> method
+   * for processing.
+   * @param req Contains the remove word data.
+   */
+  private removeWordRequestEvent(req: RemoveWordRequest): void {
+    this.workerServer.removeWordRequestEvent(req, this.socket);
   }
 }

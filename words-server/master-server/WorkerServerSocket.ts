@@ -1,6 +1,8 @@
 // Project imports
 import {MasterServer} from "./MasterServer";
 import {AddWordMaster} from "../interfaces/AddWord";
+import {RemoveWordMaster} from "../interfaces/RemoveWord";
+import {clearScreenDown} from "readline";
 
 /**
  * <h1>Socket for Worker Servers on MasterServer</h1>
@@ -9,7 +11,7 @@ import {AddWordMaster} from "../interfaces/AddWord";
  * Worker Servers.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.2.0
  * @since   2017-06-05
  */
 export class WorkerServerSocket {
@@ -39,6 +41,7 @@ export class WorkerServerSocket {
 
     // words api events
     this.socket.on('addWordMaster request', this.addWordEvent.bind(this));
+    this.socket.on('removeWordMaster request', this.removeWordEvent.bind(this));
   }
 
   /**
@@ -61,11 +64,21 @@ export class WorkerServerSocket {
   }
   
   /**
-   * Handles the socket <code>addWordMaster</code> event by
+   * Handles the socket <code>addWordMaster request</code> event by
    * broadcasting the request to all other worker servers.
    * @param req Contains the add word information.
    */
   private addWordEvent(req: AddWordMaster) {
     this.socket.broadcast.emit('addWordMaster response', req);
+  }
+  
+  /**
+   * Handles the socket <code>removeWordMaster request</code> event
+   * by broadcasting the request to all other worker servers.
+   * @param req Contains the remove word information.
+   */
+  private removeWordEvent(req: RemoveWordMaster) {
+    this.socket.broadcast.emit('removeWordMaster response', req);
+    console.log('removing word');
   }
 }

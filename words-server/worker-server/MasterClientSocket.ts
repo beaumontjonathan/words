@@ -4,6 +4,7 @@ import * as socketIOClient from 'socket.io-client';
 // Project imports
 import {WorkerServer} from "./WorkerServer";
 import {AddWordMaster} from "../interfaces/AddWord";
+import {RemoveWordMaster} from "../interfaces/RemoveWord";
 
 /**
  * <h1>Client Socket for socket.io Connection to Master Server</h1>
@@ -11,7 +12,7 @@ import {AddWordMaster} from "../interfaces/AddWord";
  * server.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.2.0
  * @since   2017-06-05
  */
 export class MasterClientSocket {
@@ -60,6 +61,7 @@ export class MasterClientSocket {
 
     // words api events
     this.socket.on('addWordMaster response', this.addWordMasterResponse.bind(this));
+    this.socket.on('removeWordMaster response', this.removeWordMasterResponse.bind(this));
   }
   
   /**
@@ -73,6 +75,8 @@ export class MasterClientSocket {
   /**
    * Handles the socket <code>disconnect</code> event by running a
    * <code>WorkerServer</code> method.
+   * @param reason  A string explaining the reason for the socket
+   *                disconnecting.
    */
   private disconnectEvent(reason: string): void {
     this.workerServer.connectedToMaster(false, reason);
@@ -81,7 +85,7 @@ export class MasterClientSocket {
   /**
    * Sends an add word request to the master server along with the
    * request data about adding the word.
-   * @param req
+   * @param req Contains the add word information.
    */
   public addWordMasterRequest(req: AddWordMaster) {
     this.socket.emit('addWordMaster request', req)
@@ -90,10 +94,28 @@ export class MasterClientSocket {
   /**
    * Handles the socket <code>addWordMaster response</code> by
    * running a <code>WorkerServer</code> method.
-   * @param req
+   * @param res Contains the add word information.
    */
-  private addWordMasterResponse(req: AddWordMaster) {
-    this.workerServer.addWordMasterResponse(req);
+  private addWordMasterResponse(res: AddWordMaster) {
+    this.workerServer.addWordMasterResponse(res);
+  }
+  
+  /**
+   * Send a remove word request to the master server along with the
+   * request data about removing the word.
+   * @param req Contains the add word information.
+   */
+  public removeWordMasterRequest(req: RemoveWordMaster) {
+    this.socket.emit('removeWordMaster request', req);
+  }
+  
+  /**
+   * Handles the socket <code>removeWordMaster response</code> by
+   * running a <code>WorkerServer</code> method.
+   * @param res Contains the remove word information.
+   */
+  private removeWordMasterResponse(res: RemoveWordMaster) {
+    this.workerServer.removeWordMasterResponse(res);
   }
 
 }

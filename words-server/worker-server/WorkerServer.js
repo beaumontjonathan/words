@@ -16,7 +16,7 @@ var WordsDatabaseHandler_1 = require("./WordsDatabaseHandler");
  * messages via the master node, which emits messages to all workers.
  *
  * @author  Jonathan Beaumont
- * @version 1.3.0
+ * @version 1.4.0
  * @since   2017-06-05
  */
 var WorkerServer = (function () {
@@ -341,6 +341,102 @@ var WorkerServer = (function () {
      */
     WorkerServer.prototype.addWordResponse = function (socket, res) {
         socket.emit('addWord response', res);
+    };
+    /**
+     * Processes a request to remove a word. Returns the success of
+     * removing the word to a callback function.
+     * @param req Contains the data for adding a new word.
+     * @param socket  The socket from which the request came.
+     */
+    WorkerServer.prototype.removeWordRequestEvent = function (req, socket) {
+        var _this = this;
+        // Sets up the remove word response.
+        var res = { success: false, word: req.word, isLoggedIn: false, isValidWord: false, wordNotYetAdded: true };
+        if (this.loginManager.isLoggedIn(socket)) {
+            // If the user is logged in.
+            res.isLoggedIn = true;
+            if (this.isValidWord(req.word)) {
+                // Word is valid.
+                res.isValidWord = true;
+                var username_2 = this.loginManager.getUsernameFromSocket(socket);
+                // Checks whether the user has added the word.
+                this.dbHandler.containsWord(username_2, res.word, function (containsWord) {
+                    if (containsWord) {
+                        // User has already added the word.
+                        res.wordNotYetAdded = false;
+                        // Remove word from database.
+                        _this.dbHandler.deleteWord(username_2, req.word, function (wordRemoved) {
+                            if (wordRemoved) {
+                                // Word removed successfully.
+                                res.success = true;
+                                _this.removeWordMasterRequest(username_2, res);
+                                _this.removeWorkForAllConnectedClients(username_2, res);
+                            }
+                            else {
+                                // Word not removed.
+                                _this.removeWordResponse(socket, res);
+                            }
+                        });
+                    }
+                    else {
+                        // USer has not added the word yet.
+                        _this.removeWordResponse(socket, res);
+                    }
+                });
+            }
+            else {
+                // Word is not valid.
+                this.removeWordResponse(socket, res);
+            }
+        }
+        else {
+            // If the user is not logged in.
+            this.removeWordResponse(socket, res);
+        }
+    };
+    /**
+     * Sends a request to the master server containing the remove word
+     * data.
+     * @param username  Username of the user who removed the word.
+     * @param res Contains information about removing the word.
+     */
+    WorkerServer.prototype.removeWordMasterRequest = function (username, res) {
+        if (this.masterSocketConnected) {
+            this.masterClientSocket.removeWordMasterRequest({ username: username, res: res });
+        }
+    };
+    /**
+     * Handles a response from the master server about a word being
+     * removed. Emits a message to all connected users with the
+     * username matching that of the remove word username.
+     * @param res Contains the data about the word being removed.
+     */
+    WorkerServer.prototype.removeWordMasterResponse = function (res) {
+        this.removeWorkForAllConnectedClients(res.username, res.res);
+        ;
+    };
+    /**
+     * Runs the <code>removeWordResponse</code> method, emitting a
+     * remove word response for all logged in sockets with the same
+     * username.
+     * @param username  The username of the user who removed the word.
+     * @param res Contains information about the word being removed.
+     */
+    WorkerServer.prototype.removeWorkForAllConnectedClients = function (username, res) {
+        var _this = this;
+        this.loginManager.forEachSocketWithUsername(username, function (socket) {
+            _this.removeWordResponse(socket, res);
+        });
+    };
+    /**
+     * Emits a socket.io <code>removeWord response</code> message to a
+     * given socket, containing information about the success of
+     * removing a word.
+     * @param socket  The socket to send the response to.
+     * @param res Contains the information about the word.
+     */
+    WorkerServer.prototype.removeWordResponse = function (socket, res) {
+        socket.emit('removeWord response', res);
     };
     return WorkerServer;
 }());

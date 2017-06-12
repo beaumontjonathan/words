@@ -6,8 +6,9 @@ import {hash, compare} from 'bcrypt';
 import {Word} from "../interfaces/Word";
 
 // Database login details.
-const DATABASE_HOST = 'odroid-c2';
-const DATABASE_USER = 'jonny';
+//const DATABASE_HOST = 'odroid-c2';
+const DATABASE_HOST = 'localhost';
+const DATABASE_USER = 'root';
 const DATABASE_PASSWORD = 'password';
 
 /**

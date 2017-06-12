@@ -7,6 +7,7 @@ import {LoginRequest, LoginResponse} from "../interfaces/Login";
 import {LogoutResponse} from "../interfaces/Logout";
 import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
 import {AddWordRequest, AddWordResponse} from "../interfaces/AddWord";
+import {RemoveWordRequest, RemoveWordResponse} from "../interfaces/RemoveWord";
 
 /**
  * <h1>Client Socket API Test</h1>
@@ -14,7 +15,7 @@ import {AddWordRequest, AddWordResponse} from "../interfaces/AddWord";
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.3.0
+ * @version 1.4.0
  * @since   2017-06-06
  */
 export class ClientSocket {
@@ -41,12 +42,12 @@ export class ClientSocket {
    * to process.
    */
   private startAcceptingLines(): void {
-    var readLine = createInterface({
+    createInterface({
       input: process.stdin,
       output: process.stdout,
       terminal: false
-    });
-    readLine.on('line', this.processCommand.bind(this));
+    })
+      .on('line', this.processCommand.bind(this));
   }
   
   /**
@@ -103,12 +104,23 @@ export class ClientSocket {
           }
           break;
           
+        // Add word command
         case "add":
-          if (words.length >= 3 && words[1] === 'word') {
+          if (words.length === 3 && words[1] === 'word') {
             response = 'Attempting to add word...';
-            this.addWordRequest({word: command.replace('add word', '').trim()});
+            this.addWordRequest({word: command.replace('add word ', '').trim()});
           } else {
-            response = 'Useage: add word <word>';
+            response = 'Usage: add word <word>';
+          }
+          break;
+          
+        // Remove word command
+        case "remove":
+          if (words.length === 3 && words[1] === 'word') {
+            response = 'Attempting to remove word...';
+            this.removeWordRequest({word: command.replace('remove word ', '').trim()})
+          } else {
+            response = 'Usage: remove word <word>';
           }
           break;
       }
@@ -139,6 +151,7 @@ export class ClientSocket {
     this.socket.on('logout response', this.logoutResponse.bind(this));
     this.socket.on('createAccount response', this.createAccountResponse.bind(this));
     this.socket.on('addWord response', this.addWordResponse.bind(this));
+    this.socket.on('removeWord response', this.removeWordResponse.bind(this));
   }
   
   /**
@@ -259,7 +272,7 @@ export class ClientSocket {
    * this socket added a word, in which case there may have been an
    * error while adding the word, or the word may have been added
    * from another socket connection somewhere in the system.
-   * @param res
+   * @param res Contains information about the word addition.
    */
   private addWordResponse(res: AddWordResponse) {
     if (res.success) {
@@ -268,6 +281,34 @@ export class ClientSocket {
       console.log('Word already added.');
     } else {
       console.log('Error, word not added.');
+    }
+  }
+  
+  /**
+   * Emits a remove word request to the server, containing the word
+   * to be removed.
+   * @param req Contains the word to be removed.
+   */
+  private removeWordRequest(req: RemoveWordRequest) {
+    this.socket.emit('removeWord request', req);
+  }
+  
+  /**
+   * Processes the response to remove the word. This may be after
+   * this socket removed a word, in which case there may have been
+   * and error while removing the word, or the word may have been
+   * added from another socket connected somewhere else.
+   * @param res Contains information about the word removal.
+   */
+  private removeWordResponse(res: RemoveWordResponse) {
+    if (res.success) {
+      console.log('Word "%s" successfully removed.', res.word);
+    } else if (!res.isValidWord) {
+      console.log('Invalid word.');
+    } else if (res.wordNotYetAdded) {
+      console.log('Word not yet removed.');
+    } else {
+      console.log('Remove word failure.');
     }
   }
 }

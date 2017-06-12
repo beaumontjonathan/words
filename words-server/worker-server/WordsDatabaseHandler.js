@@ -4,8 +4,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var mysql_1 = require("mysql");
 var bcrypt_1 = require("bcrypt");
 // Database login details.
-var DATABASE_HOST = 'odroid-c2';
-var DATABASE_USER = 'jonny';
+//const DATABASE_HOST = 'odroid-c2';
+var DATABASE_HOST = 'localhost';
+var DATABASE_USER = 'root';
 var DATABASE_PASSWORD = 'password';
 /**
  * <h1>User Database Handler</h1>

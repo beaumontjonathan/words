@@ -44,3 +44,21 @@ Add Word Master
     Response:
         Name:   "addWordMaster response"
         Data:   { username: string, res: AddWordResponse }
+
+Remove Word
+    Request:
+        Name:   "removeWord request"
+        Data:   { word: string }
+
+    Response:
+        Name:   "removeWord response"
+        Data:   { success: boolean, word: string, isLoggedIn: boolean, isValidWord: boolean, wordNotYetAdded: boolean }
+
+Remove Word Master
+    Request:
+        Name:   "removeWordMaster request"
+        Data:   { username: string, res: RemoveWordResponse }
+
+    Response:
+        Name:   "removeWordMaster response"
+        Data:   { username: string, res: RemoveWordResponse }
