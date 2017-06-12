@@ -13,7 +13,7 @@ import {RemoveWordRequest} from "../interfaces/RemoveWord";
  * requests.
  *
  * @author  Jonathan Beaumont
- * @version 1.4.0
+ * @version 1.5.0
  * @since   2017-06-05
  */
 export class ClientSocket {
@@ -47,6 +47,7 @@ export class ClientSocket {
     this.socket.on('createAccount request', this.createAccountEvent.bind(this));
     this.socket.on('addWord request', this.addWordRequestEvent.bind(this));
     this.socket.on('removeWord request', this.removeWordRequestEvent.bind(this));
+    this.socket.on('getWords request', this.getWordsRequestEvent.bind(this));
   }
   
   /**
@@ -119,5 +120,14 @@ export class ClientSocket {
    */
   private removeWordRequestEvent(req: RemoveWordRequest): void {
     this.workerServer.removeWordRequestEvent(req, this.socket);
+  }
+  
+  /**
+   * Handles the socket <code>getWords request</code> event by
+   * passing the request to the <code>WorkerServer</code> method for
+   * processing.
+   */
+  private getWordsRequestEvent(): void {
+    this.workerServer.getWordRequestEvent(this.socket);
   }
 }

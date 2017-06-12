@@ -62,3 +62,12 @@ Remove Word Master
     Response:
         Name:   "removeWordMaster response"
         Data:   { username: string, res: RemoveWordResponse }
+
+Get Words
+    Request:
+        Name:   "getWords request"
+        Data:   {}
+
+    Response:
+        Name:   "getWords response"
+        Data:   { success: boolean, wordList: Word[], isLoggedIn: boolean }

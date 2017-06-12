@@ -12,6 +12,8 @@ import {WordsDatabaseHandler} from "./WordsDatabaseHandler";
 import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
 import {AddWordMaster, AddWordRequest, AddWordResponse} from "../interfaces/AddWord";
 import {RemoveWordMaster, RemoveWordRequest, RemoveWordResponse} from "../interfaces/RemoveWord";
+import {GetWordsResponse} from "../interfaces/GetWord";
+import {Word} from "../interfaces/Word";
 
 /**
  * <h1>Worker Server</h1>
@@ -21,7 +23,7 @@ import {RemoveWordMaster, RemoveWordRequest, RemoveWordResponse} from "../interf
  * messages via the master node, which emits messages to all workers.
  *
  * @author  Jonathan Beaumont
- * @version 1.4.0
+ * @version 1.5.0
  * @since   2017-06-05
  */
 export class WorkerServer {
@@ -477,6 +479,42 @@ export class WorkerServer {
    */
   private removeWordResponse(socket: SocketIO.Socket, res: RemoveWordResponse) {
     socket.emit('removeWord response', res);
+  }
+  
+  /**
+   * Processes a request from a user to fetch all words they have
+   * added. Determines whether the request was successful and returns
+   * a suitable response to the socket.
+   * @param socket  the socket from which the request came.
+   */
+  public getWordRequestEvent(socket: SocketIO.Socket) {
+    let res: GetWordsResponse = {success: false, isLoggedIn: false};
+    if (this.loginManager.isLoggedIn(socket)) {
+      // Socket client is logged in.
+      res.isLoggedIn = true;
+      
+      let username = this.loginManager.getUsernameFromSocket(socket);
+      
+      this.dbHandler.getAllWords(username, (words: Word[]) => {
+        res.success = true;
+        res.words = words;
+        this.getWordsResponse(socket, res);
+      });
+    } else {
+      // Socket client is not logged in.
+      this.getWordsResponse(socket, res);
+    }
+  }
+  
+  /**
+   * Emits a socket.io <code>getWords response</code> message to a
+   * socket, containing the information about the success of the get
+   * words request.
+   * @param socket  The socket to send that response to.
+   * @param res Contains response information for the request.
+   */
+  private getWordsResponse(socket: SocketIO.Socket, res: GetWordsResponse) {
+    socket.emit('getWords response', res);
   }
 }
 

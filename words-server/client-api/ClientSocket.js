@@ -9,7 +9,7 @@ var readline_1 = require("readline");
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.4.0
+ * @version 1.5.0
  * @since   2017-06-06
  */
 var ClientSocket = (function () {
@@ -107,6 +107,16 @@ var ClientSocket = (function () {
                         response = 'Usage: remove word <word>';
                     }
                     break;
+                // Get words command
+                case "get":
+                    if (words[1] === 'words') {
+                        this.getWordsRequest();
+                        response = 'Attempting to get your words...';
+                    }
+                    else {
+                        response = 'Usage: get words';
+                    }
+                    break;
             }
         }
         console.log(response);
@@ -133,6 +143,7 @@ var ClientSocket = (function () {
         this.socket.on('createAccount response', this.createAccountResponse.bind(this));
         this.socket.on('addWord response', this.addWordResponse.bind(this));
         this.socket.on('removeWord response', this.removeWordResponse.bind(this));
+        this.socket.on('getWords response', this.getWordsResponse.bind(this));
     };
     /**
      * Handles the socket <code>connect</code event by logging it to
@@ -255,6 +266,7 @@ var ClientSocket = (function () {
      * @param res Contains information about the word addition.
      */
     ClientSocket.prototype.addWordResponse = function (res) {
+        //todo notLoggedIn
         if (res.success) {
             console.log('Word "%s" added successfully.', res.word);
         }
@@ -284,6 +296,9 @@ var ClientSocket = (function () {
         if (res.success) {
             console.log('Word "%s" successfully removed.', res.word);
         }
+        else if (!res.isLoggedIn) {
+            console.log('You must login before you can attempt to remove word.');
+        }
         else if (!res.isValidWord) {
             console.log('Invalid word.');
         }
@@ -294,6 +309,38 @@ var ClientSocket = (function () {
             console.log('Remove word failure.');
         }
     };
+    /**
+     * Emits a get words request to the server.
+     */
+    ClientSocket.prototype.getWordsRequest = function () {
+        this.socket.emit('getWords request');
+    };
+    /**
+     * Processes the response to the get words event. If getting the
+     * words was successful, then it will display each of the words and
+     * their corresponding id fields, otherwise it will log why the
+     * request was not successful; e.g. the user wasn't logged in.
+     * @param res Contains information about the get words response.
+     */
+    ClientSocket.prototype.getWordsResponse = function (res) {
+        if (res.success) {
+            if (res.words.length > 0) {
+                console.log('Your words:');
+                res.words.forEach(function (word, index) {
+                    console.log('  %s: %s', word.id, word.word);
+                });
+            }
+            else {
+                console.log('You do not have any words.');
+            }
+        }
+        else if (!res.isLoggedIn) {
+            console.log('You must login before you can attempt to get your words.');
+        }
+        else {
+            console.log('Unknown error getting your words.');
+        }
+    };
     return ClientSocket;
 }());
 exports.ClientSocket = ClientSocket;
@@ -301,3 +348,4 @@ exports.ClientSocket = ClientSocket;
  * being respectively the cli arguments.
  */
 new ClientSocket(process.argv[2], parseInt(process.argv[3])).startSocketConnection();
+//# sourceMappingURL=ClientSocket.js.map

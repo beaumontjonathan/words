@@ -8,6 +8,8 @@ import {LogoutResponse} from "../interfaces/Logout";
 import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
 import {AddWordRequest, AddWordResponse} from "../interfaces/AddWord";
 import {RemoveWordRequest, RemoveWordResponse} from "../interfaces/RemoveWord";
+import {GetWordsResponse} from "../interfaces/GetWord";
+import {Word} from "../interfaces/Word";
 
 /**
  * <h1>Client Socket API Test</h1>
@@ -15,7 +17,7 @@ import {RemoveWordRequest, RemoveWordResponse} from "../interfaces/RemoveWord";
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.4.0
+ * @version 1.5.0
  * @since   2017-06-06
  */
 export class ClientSocket {
@@ -123,6 +125,16 @@ export class ClientSocket {
             response = 'Usage: remove word <word>';
           }
           break;
+          
+        // Get words command
+        case "get":
+          if (words[1] === 'words') {
+            this.getWordsRequest();
+            response = 'Attempting to get your words...';
+          } else {
+            response = 'Usage: get words';
+          }
+          break;
       }
     }
     console.log(response);
@@ -152,6 +164,7 @@ export class ClientSocket {
     this.socket.on('createAccount response', this.createAccountResponse.bind(this));
     this.socket.on('addWord response', this.addWordResponse.bind(this));
     this.socket.on('removeWord response', this.removeWordResponse.bind(this));
+    this.socket.on('getWords response', this.getWordsResponse.bind(this));
   }
   
   /**
@@ -275,6 +288,7 @@ export class ClientSocket {
    * @param res Contains information about the word addition.
    */
   private addWordResponse(res: AddWordResponse) {
+    //todo notLoggedIn
     if (res.success) {
       console.log('Word "%s" added successfully.', res.word);
     } else if (res.wordAlreadyAdded) {
@@ -303,12 +317,45 @@ export class ClientSocket {
   private removeWordResponse(res: RemoveWordResponse) {
     if (res.success) {
       console.log('Word "%s" successfully removed.', res.word);
+    } else if (!res.isLoggedIn) {
+      console.log('You must login before you can attempt to remove word.');
     } else if (!res.isValidWord) {
       console.log('Invalid word.');
     } else if (res.wordNotYetAdded) {
       console.log('Word not yet removed.');
     } else {
       console.log('Remove word failure.');
+    }
+  }
+  
+  /**
+   * Emits a get words request to the server.
+   */
+  private getWordsRequest() {
+    this.socket.emit('getWords request')
+  }
+  
+  /**
+   * Processes the response to the get words event. If getting the
+   * words was successful, then it will display each of the words and
+   * their corresponding id fields, otherwise it will log why the
+   * request was not successful; e.g. the user wasn't logged in.
+   * @param res Contains information about the get words response.
+   */
+  private getWordsResponse(res: GetWordsResponse) {
+    if (res.success) {
+      if (res.words.length > 0) {
+        console.log('Your words:');
+        res.words.forEach((word: Word, index: number) => {
+          console.log('  %s: %s', word.id, word.word);
+        });
+      } else {
+        console.log('You do not have any words.');
+      }
+    } else if (!res.isLoggedIn) {
+      console.log('You must login before you can attempt to get your words.');
+    } else {
+      console.log('Unknown error getting your words.');
     }
   }
 }
