@@ -17,7 +17,7 @@ var DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.2
+ * @version 1.1.3
  * @since   2017-06-08
  */
 var WordsDatabaseHandler = (function () {
@@ -241,6 +241,7 @@ var WordsDatabaseHandler = (function () {
             var statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' (' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ', ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ') VALUES (' +
                 '(SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ? LIMIT 1), ?)';
             conn.query(statement, [username, word], function (err, res) {
+                conn.release();
                 callback(typeof res === 'object' && res.affectedRows === 1);
             });
         });
@@ -262,6 +263,7 @@ var WordsDatabaseHandler = (function () {
                 'SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?)' +
                 ' AND ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ' = ?';
             conn.query(statement, [username, word], function (err, res) {
+                conn.release();
                 callback(typeof res === 'object' && res.affectedRows > 0);
             });
         });
@@ -280,6 +282,7 @@ var WordsDatabaseHandler = (function () {
                 'SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?' +
                 ')';
             conn.query(statement, username, function (err, res) {
+                conn.release();
                 if (typeof res === 'object' && typeof res.affectedRows !== 'undefined') {
                     callback(res.affectedRows);
                 }
@@ -302,6 +305,7 @@ var WordsDatabaseHandler = (function () {
                 throw err;
             var statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ' = (SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?)';
             conn.query(statement, username, function (err, res) {
+                conn.release();
                 if (typeof res === 'object') {
                     if (res.length <= 0) {
                         callback(words);
@@ -333,6 +337,7 @@ var WordsDatabaseHandler = (function () {
                 'SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ?' +
                 ') AND ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ' = ?';
             conn.query(statement, [username, word], function (err, res) {
+                conn.release();
                 callback(typeof res === 'object' && res.length > 0);
             });
         });
