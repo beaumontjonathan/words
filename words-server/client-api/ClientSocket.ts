@@ -17,7 +17,7 @@ import {Word} from "../interfaces/Word";
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.5.0
+ * @version 1.5.1
  * @since   2017-06-06
  */
 export class ClientSocket {
@@ -288,9 +288,10 @@ export class ClientSocket {
    * @param res Contains information about the word addition.
    */
   private addWordResponse(res: AddWordResponse): void {
-    //todo notLoggedIn
     if (res.success) {
       console.log('Word "%s" added successfully.', res.word);
+    } else if (!res.isLoggedIn) {
+      console.log('You must login before you can attempt to add a word.')
     } else if (res.wordAlreadyAdded) {
       console.log('Word already added.');
     } else {

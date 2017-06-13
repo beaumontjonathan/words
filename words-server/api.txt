@@ -34,7 +34,7 @@ Add Word
 
     Response:
         Name:   "addWord response"
-        Data:   { success: boolean, word: string, isValidWord: boolean, wordAlreadyAdded: boolean }
+        Data:   { success: boolean, word: string, isLoggedIn: boolean isValidWord: boolean, wordAlreadyAdded: boolean }
 
 Add Word Master
     Request:
