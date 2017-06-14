@@ -20,7 +20,7 @@ const DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.3
+ * @version 1.2.0
  * @since   2017-06-08
  */
 export class WordsDatabaseHandler {
@@ -57,7 +57,8 @@ export class WordsDatabaseHandler {
       host: DATABASE_HOST,
       user: DATABASE_USER,
       password: DATABASE_PASSWORD,
-      database: WordsDatabaseHandler.DATABASE_NAME
+      database: WordsDatabaseHandler.DATABASE_NAME,
+      connectionLimit: 10
     });
   }
   
@@ -206,7 +207,7 @@ export class WordsDatabaseHandler {
           callback(undefined);
         } else if (typeof res === 'object') {
           if (res.length === 1)
-            callback(res[0].id)
+            callback(res[0].id);
           else
             callback(undefined);
         } else {
@@ -275,12 +276,38 @@ export class WordsDatabaseHandler {
       if (err) throw err;
       
       let statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' (' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ', ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ') VALUES (' +
-          '(SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ? LIMIT 1), ?)'
+          '(SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ? LIMIT 1), ?) ';
       conn.query(statement, [username, word], (err: IError, res) => {
         conn.release();
         callback(typeof res === 'object' && res.affectedRows === 1);
       });
     });
+  }
+  
+  /**
+   * Adds a non-empty array of words as word entries linked to a user
+   * and returns an array of boolean values corresponding to the
+   * respective successes of adding each word.
+   * @param username  The username of the user adding the words.
+   * @param words     The array of words to be added.
+   * @param callback  Function to be run after the words are added.
+   */
+  public addWords(username: string, words: string[], callback: (successes: boolean[]) => void): void {
+    if (words.length === 0) {
+      callback(undefined);
+    } else {
+      let numWords = words.length;
+      let successes = [];
+      //words.forEach((word: string, index: number) => {
+      words.forEach((word: string, index: number) => {
+        this.addWord(username, word, (success: boolean) => {
+          successes[index] = success;
+          if (successes.filter(String).length === numWords) {
+            callback(successes);
+          }
+        });
+      });
+    }
   }
   
   /**
@@ -304,6 +331,32 @@ export class WordsDatabaseHandler {
         callback(typeof res === 'object' && res.affectedRows > 0);
       });
     });
+  }
+  
+  /**
+   * Deletes a non-empty array of words from the words table
+   * corresponding to the userId linked to the username provided.
+   * Returns an array of boolean values corresponding to the
+   * respective successes of the deletion of each word.
+   * @param username  The username of the user.
+   * @param words     The array of words to remove.
+   * @param callback  Function to be run after the words are removed.
+   */
+  public deleteWords(username: string, words: string[], callback: (success: boolean[]) => void): void {
+    if (words.length === 0) {
+      callback(undefined);
+    } else {
+      let numWords = words.length;
+      let successes = [];
+      words.forEach((word: string, index: number) => {
+        this.deleteWord(username, word, (success: boolean) => {
+          successes[index] = success;
+          if (successes.filter(String).length === numWords) {
+            callback(successes);
+          }
+        });
+      })
+    }
   }
   
   /**

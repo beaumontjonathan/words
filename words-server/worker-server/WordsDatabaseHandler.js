@@ -17,7 +17,7 @@ var DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.3
+ * @version 1.2.0
  * @since   2017-06-08
  */
 var WordsDatabaseHandler = (function () {
@@ -29,7 +29,8 @@ var WordsDatabaseHandler = (function () {
             host: DATABASE_HOST,
             user: DATABASE_USER,
             password: DATABASE_PASSWORD,
-            database: WordsDatabaseHandler.DATABASE_NAME
+            database: WordsDatabaseHandler.DATABASE_NAME,
+            connectionLimit: 10
         });
     }
     /**
@@ -239,12 +240,39 @@ var WordsDatabaseHandler = (function () {
             if (err)
                 throw err;
             var statement = 'INSERT INTO ' + WordsDatabaseHandler.TABLE.WORDS.NAME + ' (' + WordsDatabaseHandler.TABLE.WORDS.FIELD.USERID + ', ' + WordsDatabaseHandler.TABLE.WORDS.FIELD.WORD + ') VALUES (' +
-                '(SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ? LIMIT 1), ?)';
+                '(SELECT ' + WordsDatabaseHandler.TABLE.USERS.FIELD.ID + ' FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + ' = ? LIMIT 1), ?) ';
             conn.query(statement, [username, word], function (err, res) {
                 conn.release();
                 callback(typeof res === 'object' && res.affectedRows === 1);
             });
         });
+    };
+    /**
+     * Adds a non-empty array of words as word entries linked to a user
+     * and returns an array of boolean values corresponding to the
+     * respective successes of adding each word.
+     * @param username  The username of the user adding the words.
+     * @param words     The array of words to be added.
+     * @param callback  Function to be run after the words are added.
+     */
+    WordsDatabaseHandler.prototype.addWords = function (username, words, callback) {
+        var _this = this;
+        if (words.length === 0) {
+            callback(undefined);
+        }
+        else {
+            var numWords_1 = words.length;
+            var successes_1 = [];
+            //words.forEach((word: string, index: number) => {
+            words.forEach(function (word, index) {
+                _this.addWord(username, word, function (success) {
+                    successes_1[index] = success;
+                    if (successes_1.filter(String).length === numWords_1) {
+                        callback(successes_1);
+                    }
+                });
+            });
+        }
     };
     /**
      * Deletes a word entry from the words table. Takes the username
@@ -267,6 +295,33 @@ var WordsDatabaseHandler = (function () {
                 callback(typeof res === 'object' && res.affectedRows > 0);
             });
         });
+    };
+    /**
+     * Deletes a non-empty array of words from the words table
+     * corresponding to the userId linked to the username provided.
+     * Returns an array of boolean values corresponding to the
+     * respective successes of the deletion of each word.
+     * @param username  The username of the user.
+     * @param words     The array of words to remove.
+     * @param callback  Function to be run after the words are removed.
+     */
+    WordsDatabaseHandler.prototype.deleteWords = function (username, words, callback) {
+        var _this = this;
+        if (words.length === 0) {
+            callback(undefined);
+        }
+        else {
+            var numWords_2 = words.length;
+            var successes_2 = [];
+            words.forEach(function (word, index) {
+                _this.deleteWord(username, word, function (success) {
+                    successes_2[index] = success;
+                    if (successes_2.filter(String).length === numWords_2) {
+                        callback(successes_2);
+                    }
+                });
+            });
+        }
     };
     /**
      * Deletes all words corresponding to a user. Returns the number of
