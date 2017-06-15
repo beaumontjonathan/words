@@ -14,4 +14,14 @@
     At the bottom of the screen are navigation buttons to change page
     to the Words or Settings pages.
   </p>
+  <form (ngSubmit)="addWord()">
+    <ion-item>
+      <ion-label floating>
+        Enter word...
+      </ion-label>
+      <ion-input type="text" [(ngModel)]="wordInput" name="wordInput"></ion-input>
+    </ion-item>
+    <br>
+    <button ion-button type="submit" name="Button">Add </button>
+  </form>
 </ion-content>

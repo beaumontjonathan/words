@@ -7,5 +7,11 @@
 </ion-header>
 
 <ion-content padding>
-
+  <div>
+    <ion-card *ngFor="let word of words; let i = index">
+      <ion-card-content>
+        {{word.word}}
+      </ion-card-content>
+    </ion-card>
+  </div>
 </ion-content>
