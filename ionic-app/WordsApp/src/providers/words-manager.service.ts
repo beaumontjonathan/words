@@ -16,7 +16,6 @@ export class WordsManagerService {
   
   /**
    * Constructor.
-   * @param storage
    */
   constructor() {
     this.setWordsList();
@@ -47,6 +46,22 @@ export class WordsManagerService {
   }
   
   /**
+   * Removes a word from the list of words if the list already
+   * contains the word.
+   * @param word  The word to add.
+   * @returns {boolean} Whether the word was found and removed.
+   */
+  public removeWord(word: Word): boolean {
+    console.log('Removing word: ' + word.word);
+    let index: number = this.allWords.indexOf(word);
+    if (index >= 0) {
+      this.allWords.splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+  
+  /**
    * Used to sort an array of objects by their properties.
    * <p>
    * Usage: 'myArray.sort(this.sortWords('prop1', 'prop2'));'
@@ -58,7 +73,7 @@ export class WordsManagerService {
    */
   private sortWords(...props: string[]) {
     function dynamicSort(property: string) {
-      var sortOrder = 1;
+      let sortOrder = 1;
       if (property[0] === '-') {
         sortOrder = -1;
         property = property.substr(1);

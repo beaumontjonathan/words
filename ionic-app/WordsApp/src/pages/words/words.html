@@ -8,7 +8,7 @@
 
 <ion-content padding>
   <div>
-    <ion-card *ngFor="let word of words; let i = index">
+    <ion-card (click)="removeWord(word)" *ngFor="let word of words">
       <ion-card-content>
         {{word.word}}
       </ion-card-content>

@@ -29,5 +29,13 @@ export class WordsPage {
   constructor(public navCtrl: NavController, private wordsManager: WordsManagerService) {
     this.words = wordsManager.allWords;
   }
+  
+  /**
+   * Removes a word from the list of words.
+   * @param word  The word to be removed.
+   */
+  public removeWord(word: Word) {
+    this.wordsManager.removeWord(word);
+  }
 
 }
