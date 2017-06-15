@@ -1,12 +1,13 @@
 import {Injectable} from "@angular/core";
 import {Word} from "../../../../words-server/interfaces/Word";
+import {Storage} from "@ionic/storage";
 
 /**
  * <h1>Words Manager</h1>
  * Managers the list of words stored on the device.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.1.0
  * @since   2017-06-15
  */
 @Injectable()
@@ -17,7 +18,7 @@ export class WordsManagerService {
   /**
    * Constructor.
    */
-  constructor() {
+  constructor(private storage: Storage) {
     this.setWordsList();
   }
   
@@ -27,6 +28,23 @@ export class WordsManagerService {
    */
   private setWordsList(): void {
     this.allWords = [];
+    this.storage.get('words')
+      .then(val => {
+      console.log(val);
+      if (val) {
+        //this.allWords = val;
+        for (let i = 0, numWords = val.length; i < numWords; i++) {
+          this.allWords.push(val[i]);
+          if (i === numWords - 1) {
+            this.allWords.sort(this.sortWords('word'));
+          }
+        }
+      } else {
+      }
+    }, error => {
+      console.log('Error! ' + error);
+      this.allWords = [];
+    });
   }
   
   /**
@@ -41,6 +59,7 @@ export class WordsManagerService {
     } else {
       this.allWords.push({id: null, word: word});
       this.allWords.sort(this.sortWords('word', 'id'));
+      this.updateStorageWords();
       callback(true);
     }
   }
@@ -56,9 +75,18 @@ export class WordsManagerService {
     let index: number = this.allWords.indexOf(word);
     if (index >= 0) {
       this.allWords.splice(index, 1);
+      this.updateStorageWords();
       return true;
     }
     return false;
+  }
+  
+  /**
+   * Updates the list of words stored locally to match the list
+   * stored in memory.
+   */
+  private updateStorageWords() {
+    this.storage.set('words', this.allWords);
   }
   
   /**

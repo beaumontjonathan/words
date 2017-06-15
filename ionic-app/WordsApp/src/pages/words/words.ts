@@ -10,7 +10,7 @@ import {Word} from "../../../../../words-server/interfaces/Word";
  * the <code>WordsManagerService</code>.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.1
  * @since   2017-06-14
  */
 @Component({
