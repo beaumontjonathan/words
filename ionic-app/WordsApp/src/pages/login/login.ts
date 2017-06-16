@@ -1,6 +1,6 @@
 // Module imports
 import {Component} from "@angular/core";
-import {AlertController, LoadingController, NavController} from "ionic-angular";
+import {AlertController, Events, LoadingController, NavController} from "ionic-angular";
 
 // Project imports
 import {TabsPage} from "../tabs/tabs";
@@ -13,7 +13,7 @@ import {LoginResponse} from "../../../../../words-server/interfaces/Login";
  * just return to the app.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-16
  */
 @Component({
@@ -27,67 +27,27 @@ export class LoginPage {
   private loginErrorMessage: string;  // Holds a login error message.
   
   /**
-   * Constructor. Subscribes to the <code>LoginManager</code> service
-   * <code>loginPageService</code> and binds the events to the
-   * respective login service handling methods.
+   * Constructor. Binds the application-level events to their
+   * respective methods.
    * @param navCtrl Controls navigation to other pages.
    * @param loginManager  Manages logging in and out.
    * @param alertCtrl Alerts controller.
    * @param loadingCtrl Loading controller.
    */
-  constructor(public navCtrl: NavController, private loginManager: LoginManager, private alertCtrl: AlertController, private loadingCtrl:LoadingController) {
-    
+  constructor(public navCtrl: NavController, private loginManager: LoginManager, private alertCtrl: AlertController, private loadingCtrl:LoadingController, private events: Events) {
     /* Allows the <code>LoginManager</code> to access the top
      * navigation controller.
      */
     loginManager.addNav(navCtrl);
     
-    this.loginManager.loginPageService.subscribe(
-      this.onLoginServiceEvent.bind(this),
-      this.onLoginServiceError.bind(this),
-      this.onLoginServiceEnd.bind(this)
-    );
+    this.bindSubscribeEvents();
   }
   
   /**
-   * Handles an event from the login service.
-   * @param data  Contains the event data.
+   * Binds the application-level events to their respective methods.
    */
-  private onLoginServiceEvent(data) {
-    this.processLoginServiceEvent(data);
-  }
-  
-  /**
-   * Handles an error from the login service.
-   * @param error Contains the error data.
-   */
-  private onLoginServiceError(error) {
-    console.log('Error from login service:');
-    console.log(error);
-  }
-  
-  /**
-   * Handles the end of the login service.
-   */
-  private onLoginServiceEnd() {
-    console.log('Login service subscription finished...?');
-  }
-  
-  /**
-   * Processes a login service event by switching on the name of the
-   * event.
-   * @param data Contains the event data.
-   */
-  private processLoginServiceEvent(data) {
-    // Switches on the event name if one exists.
-    if (typeof data === 'object' && typeof data.event === 'string') {
-      switch(data.event) {
-        // If the event if a login response.
-        case 'login response':
-          this.handleLoginResponse(data.res);
-          break;
-      }
-    }
+  private bindSubscribeEvents() {
+    this.events.subscribe('socket login response', this.handleLoginResponse.bind(this));
   }
   
   /**
@@ -97,7 +57,6 @@ export class LoginPage {
    * @param res Contains the login response data.
    */
   private handleLoginResponse(res: LoginResponse) {
-    
     // Dismiss the login loading screen.
     this.dismissLoggingInLoader().then(() => {
       

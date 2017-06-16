@@ -1,7 +1,6 @@
 // Module imports
 import {Injectable} from "@angular/core";
-import {AlertController, NavController} from "ionic-angular";
-import {Observable} from "rxjs/Observable";
+import {AlertController, Events, NavController} from "ionic-angular";
 
 // Project imports
 import {SocketManagerService} from "./socket-manager.service";
@@ -15,7 +14,7 @@ import {LoginResponse} from "../../../../words-server/interfaces/Login";
  * app and the <code>SocketManagerService</code>
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-16
  */
 @Injectable()
@@ -23,33 +22,31 @@ export class LoginManager {
   
   // If the login screen is being displayed for the first time.
   private _initialScreen: boolean = true;
-  public loginPageService: any;
-  private loginPageObserver: any;
   private _loggedIn: boolean; // Whether the user is logged in.
   // Holds the first, highest up nav controller.
   private nav: NavController;
   
   /**
-   * Constructor.
+   * Constructor. Initialises the <code>_loggedIn</code> flag, then
+   * binds the application-level events to their respective methods.
    * @param socketManager Manages the socket.
    * @param alertCtrl Alerts controller.
+   * @param events  Application-level events.
    */
-  constructor(private socketManager: SocketManagerService, private alertCtrl: AlertController) {
+  constructor(private socketManager: SocketManagerService, private alertCtrl: AlertController, private events: Events) {
     this._loggedIn = false;
+    
+    this.bindSubscribeEvents();
+  }
   
-    /* Creates an observer and service to send messages to the login
-     * page.
-     */
-    this.loginPageService = Observable.create(observer => {
-      this.loginPageObserver = observer;
-    });
-  
-    // Binds the login service event types to their methods.
-    this.socketManager.socketLoginService.subscribe(
-      this.onSocketLoginServiceEvent.bind(this),
-      this.onSocketLoginServiceError.bind(this),
-      this.onSocketLoginServiceEnd.bind(this)
-    )
+  /**
+   * Binds the application-level events to their respective methods.
+   */
+  private bindSubscribeEvents() {
+    this.events.subscribe('socket connect', this.handleSocketConnect.bind(this));
+    this.events.subscribe('socket disconnect', this.handleSocketDisconnect.bind(this));
+    this.events.subscribe('socket login response', this.handleSocketLoginResponse.bind(this));
+    this.events.subscribe('socket logout response', this.handleSocketLogoutResponse.bind(this));
   }
   
   /**
@@ -78,67 +75,12 @@ export class LoginManager {
   }
   
   /**
-   * Run when an event is send by the socket login service. Passes
-   * the data to a method to process the event.
-   * @param data  Data from the event.
-   */
-  private onSocketLoginServiceEvent(data) {
-    this.processSocketServiceEvent(data);
-  }
-  
-  /**
-   * Run when an error occurs from the socket login service. Logs the
-   * error to the console. Unknown when this will ever be run.
-   * @param error Error from the login service.
-   */
-  private onSocketLoginServiceError(error) {
-    console.log('Socket login servie error: ' + error);
-  }
-  
-  /**
-   * Run when the socket login service is finished. Unknown when this
-   * should ever be run.
-   */
-  private onSocketLoginServiceEnd() {
-    console.log('Socket login service finished!');
-  }
-  
-  /**
-   * Processes a socket service event.
-   * @param data
-   */
-  private processSocketServiceEvent(data) {
-    
-    /* If the data from the event is an object and contains a string
-     * event description.
-     */
-    if (typeof data === 'object' && typeof data.event === 'string') {
-      
-      // Runs different handler methods based on the type of event.
-      switch (data.event) {
-        case 'connect':
-          this.handleSocketConnect();
-          break;
-        case 'disconnect':
-          this.handleSocketDisconnect(data.reason);
-          break;
-        case 'login response':
-          this.handleSocketLoginResponse(data.res);
-          break;
-        case 'logout response':
-          this.handleSocketLogoutResponse(data.res);
-          break;
-      }
-    }
-  }
-  
-  /**
    * Run when the socket is connected to the server. May be used
    * later to automatically log the user in if the socket disconnects
    * the reconnects.
    */
   private handleSocketConnect() {
-  
+    console.log('connected from login manager');
   }
   
   /**
@@ -163,9 +105,6 @@ export class LoginManager {
    * @param res Contains the login response data.
    */
   private handleSocketLoginResponse(res: LoginResponse) {
-    // Notify login page about login response.
-    this.loginPageObserver.next({event: 'login response', res: res});
-    
     // If successful login raise logged in flag.
     if (res.success) {
       this._loggedIn = true;

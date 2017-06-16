@@ -1,8 +1,7 @@
 // Module imports
 import {Injectable} from "@angular/core";
-import {Http} from "@angular/http";
-import {Observable} from "rxjs/Observable";
 import * as io from 'socket.io-client';
+import {Events} from "ionic-angular";
 
 // Project imports
 import {LoginRequest, LoginResponse} from "../../../../words-server/interfaces/Login";
@@ -14,32 +13,23 @@ import {LogoutResponse} from "../../../../words-server/interfaces/Logout";
  * connection.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-16
  */
 @Injectable()
 export class SocketManagerService {
   
-  public socketLoginService: any;
-  private socketLoginObserver: any;
   private socket: any;  // The socket.io cliet socket.
   // Holds whether the socket is connected to the server.
   private _socketConnected: boolean = false;
   // Host to connect the socket to.
-  socketHost: string = 'http://localhost:1234';
+  private socketHost: string = 'http://localhost:1234';
   
   /**
    * Constructor.
-   * @param http
+   * @param events  Application-level events.
    */
-  constructor(private http: Http) {
-    
-    /* Creates an observer and service to send messages to the login
-     * manager.
-     */
-    this.socketLoginService = Observable.create(observer => {
-      this.socketLoginObserver = observer;
-    });
+  constructor(private events: Events) {
   }
   
   /**
@@ -56,13 +46,13 @@ export class SocketManagerService {
    */
   initialize() {
     this.socket = io.connect(this.socketHost);
-    this.bindEvents();
+    this.bindSocketEvents();
   }
   
   /**
    * Binds the socket.io events to their respective methods.
    */
-  private bindEvents(): void {
+  private bindSocketEvents(): void {
     // socket.io api events
     this.socket.on('connect', this.connectEvent.bind(this));
     this.socket.on('disconnect', this.disconnectEvent.bind(this));
@@ -77,26 +67,23 @@ export class SocketManagerService {
   
   /**
    * Handles the socket <code>connect</code event by logging it to
-   * the console, and sending a message to the socket login observer
-   * stating that it has connected.
+   * the console and publishing it to events.
    */
   private connectEvent(): void {
     this._socketConnected = true;
     console.log('Connected to worker node.');
-    this.socketLoginObserver.next({event: 'connect'});
+    this.events.publish('socket connect');
   }
   
   /**
    * Handles the socket <code>disconnect</code> event by logging it
-   * to the console, and sending a message to the socket login
-   * observer stating that is has disconnected along with the reason
-   * for the socket disconnecting.
+   * to the console and publishing it to events.
    * @param reason The string reason for the socket disconnecting.
    */
   private disconnectEvent(reason: string): void {
     this._socketConnected = false;
     console.log('Disconnecting socket. Reason: ' + reason);
-    this.socketLoginObserver.next({event: 'disconnect', reason: reason});
+    this.events.publish('socket disconnect', reason);
   }
   
   /**
@@ -130,12 +117,12 @@ export class SocketManagerService {
   }
   
   /**
-   * Processes the response to the login request by sending a message
-   * to the <code>socketLoginObserver</code>.
+   * Processes the response to the login request by publishing it to
+   * events.
    * @param res  Contains data about the success of the login.
    */
   private loginResponse(res: LoginResponse): void {
-    this.socketLoginObserver.next({event: 'login response', res: res});
+    this.events.publish('socket login response', res);
   }
   
   /**
@@ -146,12 +133,12 @@ export class SocketManagerService {
   }
   
   /**
-   * Processes the response to the logout request by sending a
-   * message to the <code>socketLoginObserver</code>.
+   * Processes the response to the logout request by publishing it to
+   * events.
    * @param res  Contains data about the success of the logout.
    */
   private logoutResponse(res: LogoutResponse): void {
-    this.socketLoginObserver.next({event: 'logout response', res: res});
+    this.events.publish('socket logout response', res);
   }
 
 }
