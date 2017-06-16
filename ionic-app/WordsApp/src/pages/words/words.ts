@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
-import { NavController } from 'ionic-angular';
+// Module imports
+import {Component} from '@angular/core';
+import {NavController} from 'ionic-angular';
+
+// Project imports
 import {WordsManagerService} from "../../providers/words-manager.service";
 import {Word} from "../../../../../words-server/interfaces/Word";
 

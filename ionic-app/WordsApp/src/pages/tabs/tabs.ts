@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+// Module imports
+import {Component} from '@angular/core';
 
-import { WordsPage } from '../words/words';
-import { SettingsPage } from '../settings/settings';
-import { HomePage } from '../home/home';
+// Project imports
+import {WordsPage} from '../words/words';
+import {SettingsPage} from '../settings/settings';
+import {HomePage} from '../home/home';
 
 @Component({
   templateUrl: 'tabs.html'

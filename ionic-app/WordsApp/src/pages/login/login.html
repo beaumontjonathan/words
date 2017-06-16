@@ -1,0 +1,41 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>Login</ion-title>
+  </ion-navbar>
+</ion-header>
+
+
+<ion-content padding>
+
+  <div>
+
+    <!-- Shows error message is socket is not connected. -->
+    <ion-item *ngIf="!loginManager.loginAvailable()">
+      <p>Login service unavailable as cannot connect to server.</p>
+    </ion-item>
+
+    <!-- Shows a login error message if it exists. -->
+    <ion-item *ngIf="loginErrorMessage">
+      <p>{{loginErrorMessage}}</p>
+    </ion-item>
+
+    <ion-item>
+      <ion-input type="text" placeholder="Username" [(ngModel)]="username"></ion-input>
+    </ion-item>
+
+    <ion-item>
+      <ion-input type="password" placeholder="Password" [(ngModel)]="password"></ion-input>
+    </ion-item>
+
+  </div>
+
+  <span>
+    <button ion-button color="primary" (click)="doLogin()">Login</button>
+  </span>
+
+  <!-- Shows a skip login button if it is the initial app load. -->
+  <span *ngIf="loginManager.initialScreen">
+    <button ion-button color="dark" (click)="doSkipLogin()" clear>Skip</button>
+  </span>
+
+</ion-content>

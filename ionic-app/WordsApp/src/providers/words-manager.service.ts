@@ -1,6 +1,9 @@
+// Module imports
 import {Injectable} from "@angular/core";
-import {Word} from "../../../../words-server/interfaces/Word";
 import {Storage} from "@ionic/storage";
+
+// Project imports
+import {Word} from "../../../../words-server/interfaces/Word";
 
 /**
  * <h1>Words Manager</h1>
