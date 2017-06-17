@@ -1,6 +1,6 @@
 // Module imports
 import {Component} from '@angular/core';
-import {NavController} from 'ionic-angular';
+import {AlertController, NavController} from 'ionic-angular';
 
 // Project imports
 import {WordsManagerService} from "../../providers/words-manager.service";
@@ -29,7 +29,7 @@ export class WordsPage {
    * @param navCtrl Controls navigation to other pages.
    * @param wordsManager  Holds and manipulates the list of words.
    */
-  constructor(public navCtrl: NavController, private wordsManager: WordsManagerService) {
+  constructor(public navCtrl: NavController, private wordsManager: WordsManagerService, private alertCtrl: AlertController) {
     this.words = wordsManager.allWords;
   }
   
@@ -38,7 +38,31 @@ export class WordsPage {
    * @param word  The word to be removed.
    */
   public removeWord(word: Word) {
-    this.wordsManager.removeWord(word);
+    let confirm = this.alertCtrl.create({
+      title: 'Delete',
+      message: 'Are you sure you want to delete \'' + word.word + '\'?',
+      buttons: [
+        {
+          text: 'Cancel',
+          handler: () => {
+            // Cancel
+          }
+        },
+        {
+          text: 'Delete',
+          handler: () => {
+            this.wordsManager.removeWord(word);
+          }
+        }
+      ]
+    });
+    confirm.present()
+      .then(data => {
+        // word deleted.
+      })
+      .catch(err => {
+        // error from confirm promise.
+      })
   }
 
 }
