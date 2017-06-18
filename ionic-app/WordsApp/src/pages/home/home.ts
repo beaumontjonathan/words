@@ -1,9 +1,10 @@
 // Module imports
-import {Component, ViewChild} from '@angular/core';
+import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
 
 // Project imports
 import {WordsManagerService} from "../../providers/words-manager.service";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 
 /**
  * <h1>Home Page</h1>
@@ -20,45 +21,31 @@ import {WordsManagerService} from "../../providers/words-manager.service";
 })
 export class HomePage {
   
-  @ViewChild('wordInput')wordInput; // The word text input.
+  private addWordForm: FormGroup;
+  private addWordChange: boolean;
   
   /**
    * Constructor.
    * @param navCtrl Controls navigation to other pages.
    * @param wordsManager  Holds and manipulates the list of words.
    */
-  constructor(public navCtrl: NavController, private wordsManager: WordsManagerService) {
-  
+  constructor(public navCtrl: NavController, private wordsManager: WordsManagerService, private formBuilder: FormBuilder) {
+    this.addWordChange = false;
+    this.addWordForm = formBuilder.group({
+      word: ['', Validators.compose([Validators.required, Validators.pattern('^[a-zA-Z-]{1,31}$')])]
+    })
   }
   
   /**
    * Adds a new word to the list of words.
    */
   public addWord(): void {
-    let inputWord = (this.wordInput || '').trim();
-    this.wordInput = '';
-    if (this.isValidWord(inputWord)) {
-      console.log('Valid!');
-      this.wordsManager.addWord(inputWord, console.log);
+    if (!this.addWordForm.valid) {
     } else {
-      console.log('Invalid... :(');
+      this.addWordChange = false;
+      this.wordsManager.addWord(this.addWordForm.value.word, console.log);
+      this.addWordForm.reset();
     }
   }
   
-  /**
-   * Checks whether the word is in a valid format.
-   * <p>
-   * A valid format required the word to be between 1 and 31
-   * characters long, containing only letters and dashes.
-   * @param word  The word to check.
-   * @returns {boolean} Whether the word is in a valid format.
-   */
-  private isValidWord(word: string): boolean {
-    if (typeof word === 'string' && word != '') {
-      let patt = new RegExp('^[a-zA-Z-]{1,31}$');
-      return patt.test(word);
-    }
-    return false;
-  }
-
 }

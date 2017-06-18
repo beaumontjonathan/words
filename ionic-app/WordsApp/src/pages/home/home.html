@@ -14,14 +14,18 @@
     At the bottom of the screen are navigation buttons to change page
     to the Words or Settings pages.
   </p>
-  <form (ngSubmit)="addWord()">
+  <form (ngSubmit)="addWord()" [formGroup]="addWordForm">
     <ion-item>
       <ion-label floating>
         Enter word...
       </ion-label>
-      <ion-input type="text" [(ngModel)]="wordInput" name="wordInput"></ion-input>
+      <ion-input formControlName="word" type="text" (input)="addWordChange = true"></ion-input>
     </ion-item>
-    <br>
-    <button ion-button type="submit" name="Button">Add </button>
+    <ion-item *ngIf="!(addWordForm.valid) && addWordChange && addWordForm.value.word != ''" style="color: #ea6153" no-lines>
+      Invalid word. Must be between 1 and 31 characters and only contain letters and dashes.
+    </ion-item>
+    <div padding>
+      <button ion-button type="submit" name="Button">Add </button>
+    </div>
   </form>
 </ion-content>
