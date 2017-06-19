@@ -1,10 +1,10 @@
 // Module imports
 import {Component} from '@angular/core';
 import {NavController} from 'ionic-angular';
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 
 // Project imports
 import {WordsManagerService} from "../../providers/words-manager.service";
-import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 
 /**
  * <h1>Home Page</h1>
@@ -12,7 +12,7 @@ import {FormBuilder, FormGroup, Validators} from "@angular/forms";
  * allows users to add new words to the list of words.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.1.0
  * @since   2017-06-14
  */
 @Component({

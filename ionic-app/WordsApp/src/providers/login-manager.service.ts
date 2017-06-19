@@ -1,10 +1,9 @@
 // Module imports
 import {Injectable} from "@angular/core";
-import {AlertController, Events, NavController} from "ionic-angular";
+import {AlertController, Events} from "ionic-angular";
 
 // Project imports
 import {SocketManagerService} from "./socket-manager.service";
-import {LoginPage} from "../pages/login/login";
 import {LogoutResponse} from "../../../../words-server/interfaces/Logout";
 import {LoginResponse} from "../../../../words-server/interfaces/Login";
 
@@ -14,17 +13,14 @@ import {LoginResponse} from "../../../../words-server/interfaces/Login";
  * app and the <code>SocketManagerService</code>
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.1.0
  * @since   2017-06-16
  */
 @Injectable()
-export class LoginManager {
+export class LoginManagerService {
   
-  // If the login screen is being displayed for the first time.
-  private _initialScreen: boolean = true;
   private _loggedIn: boolean; // Whether the user is logged in.
-  // Holds the first, highest up nav controller.
-  private nav: NavController;
+  private logoutAlert;  // Holds the alert for logging out.
   
   /**
    * Constructor. Initialises the <code>_loggedIn</code> flag, then
@@ -35,7 +31,6 @@ export class LoginManager {
    */
   constructor(private socketManager: SocketManagerService, private alertCtrl: AlertController, private events: Events) {
     this._loggedIn = false;
-    
     this.bindSubscribeEvents();
   }
   
@@ -43,10 +38,10 @@ export class LoginManager {
    * Binds the application-level events to their respective methods.
    */
   private bindSubscribeEvents() {
-    this.events.subscribe('socket connect', this.handleSocketConnect.bind(this));
-    this.events.subscribe('socket disconnect', this.handleSocketDisconnect.bind(this));
-    this.events.subscribe('socket login response', this.handleSocketLoginResponse.bind(this));
-    this.events.subscribe('socket logout response', this.handleSocketLogoutResponse.bind(this));
+    this.events.subscribe('LoginManager socket connect', this.handleSocketConnect.bind(this));
+    this.events.subscribe('LoginManager socket disconnect', this.handleSocketDisconnect.bind(this));
+    this.events.subscribe('LoginManager login response', this.handleSocketLoginResponse.bind(this));
+    this.events.subscribe('LoginManager logout response', this.handleSocketLogoutResponse.bind(this));
   }
   
   /**
@@ -67,20 +62,12 @@ export class LoginManager {
   }
   
   /**
-   * Getter for whether the login screen has been displayed more than once.
-   * @returns {boolean}
-   */
-  get initialScreen(): boolean {
-    return this._initialScreen;
-  }
-  
-  /**
    * Run when the socket is connected to the server. May be used
    * later to automatically log the user in if the socket disconnects
    * the reconnects.
    */
   private handleSocketConnect() {
-    console.log('connected from login manager');
+  
   }
   
   /**
@@ -91,12 +78,7 @@ export class LoginManager {
   private handleSocketDisconnect(reason: string) {
     if (this._loggedIn) {
       this._loggedIn = false;
-      let alert = this.alertCtrl.create({
-        title: 'Socket disconnected!',
-        subTitle: 'Cannot connect to server. You were logged out :(',
-        buttons: ['OK']
-      });
-      alert.present();
+      this.showLogoutAlert();
     }
   }
   
@@ -127,7 +109,7 @@ export class LoginManager {
    * @param username  The username to login with.
    * @param password  The password to login with.
    */
-  public login(username?: string, password?: string) {
+  public login(username: string, password: string) {
     this.socketManager.loginRequest({username: username, password: password});
   }
   
@@ -139,19 +121,15 @@ export class LoginManager {
   }
   
   /**
-   * Sets up the navigation controller. *Hacky* way to access the top
-   * level navigation controller.
-   * @param nav The navigation controller.
+   * Shows an alert, stating that connection to the server has been
+   * lost and that the user was logged out.
    */
-  public addNav(nav: NavController) {
-    this.nav = nav;
-  }
-  
-  /**
-   * Navigates the user to the login page.
-   */
-  public navToLogin() {
-    this._initialScreen = false;
-    this.nav.push(LoginPage, {}, {animate: true, direction: 'forward'});
+  private showLogoutAlert() {
+    this.logoutAlert = this.alertCtrl.create({
+      title: 'Socket disconnected!',
+      subTitle: 'Cannot connect to server. You were logged out :(',
+      buttons: ['Dismiss']
+    });
+    this.logoutAlert.present();
   }
 }

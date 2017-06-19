@@ -14,7 +14,7 @@ import {SettingsPage} from '../pages/settings/settings';
 import {HomePage} from '../pages/home/home';
 import {TabsPage} from '../pages/tabs/tabs';
 import {LoginPage} from "../pages/login/login";
-import {LoginManager} from "../providers/login-manager.service";
+import {LoginManagerService} from "../providers/login-manager.service";
 import {WordsManagerService} from "../providers/words-manager.service";
 import {SocketManagerService} from "../providers/socket-manager.service";
 
@@ -48,7 +48,7 @@ MyApp,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     SocketManagerService,
     WordsManagerService,
-    LoginManager
+    LoginManagerService
   ]
 })
 export class AppModule {}

@@ -13,13 +13,13 @@ import {LogoutResponse} from "../../../../words-server/interfaces/Logout";
  * connection.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.0.2
  * @since   2017-06-16
  */
 @Injectable()
 export class SocketManagerService {
   
-  private socket: any;  // The socket.io cliet socket.
+  private socket: any;  // The socket.io client socket.
   // Holds whether the socket is connected to the server.
   private _socketConnected: boolean = false;
   // Host to connect the socket to.
@@ -72,7 +72,7 @@ export class SocketManagerService {
   private connectEvent(): void {
     this._socketConnected = true;
     console.log('Connected to worker node.');
-    this.events.publish('socket connect');
+    this.events.publish('LoginManager socket connect');
   }
   
   /**
@@ -83,7 +83,7 @@ export class SocketManagerService {
   private disconnectEvent(reason: string): void {
     this._socketConnected = false;
     console.log('Disconnecting socket. Reason: ' + reason);
-    this.events.publish('socket disconnect', reason);
+    this.events.publish('LoginManager socket disconnect', reason);
   }
   
   /**
@@ -122,7 +122,8 @@ export class SocketManagerService {
    * @param res  Contains data about the success of the login.
    */
   private loginResponse(res: LoginResponse): void {
-    this.events.publish('socket login response', res);
+    this.events.publish('LoginManager login response', res);
+    this.events.publish('LoginPage login response', res);
   }
   
   /**
@@ -138,7 +139,7 @@ export class SocketManagerService {
    * @param res  Contains data about the success of the logout.
    */
   private logoutResponse(res: LogoutResponse): void {
-    this.events.publish('socket logout response', res);
+    this.events.publish('LoginManager logout response', res);
   }
 
 }

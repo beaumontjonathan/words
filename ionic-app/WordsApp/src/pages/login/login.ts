@@ -1,53 +1,65 @@
 // Module imports
-import {Component} from "@angular/core";
-import {AlertController, Events, LoadingController, NavController} from "ionic-angular";
+import {Component, OnDestroy} from "@angular/core";
+import {App, Events, LoadingController, NavController} from "ionic-angular";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 
 // Project imports
 import {TabsPage} from "../tabs/tabs";
-import {LoginManager} from "../../providers/login-manager.service";
 import {LoginResponse} from "../../../../../words-server/interfaces/Login";
+import {LoginManagerService} from "../../providers/login-manager.service";
 
 /**
  * <h1>Login Page</h1>
- * Provides an interface and methods for allowing a user to login or
- * just return to the app.
+ * Provides an interface and methods for allowing a uer to login or,
+ * if loading the app for the first time, to redirect to the main app
+ * page.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.1.0
  * @since   2017-06-16
  */
 @Component({
+  selector: 'page-login',
   templateUrl: 'login.html'
 })
-export class LoginPage {
+export class LoginPage implements OnDestroy {
   
-  private username: string = '';  // The username input text.
-  private password: string = '';  // The password input text.
-  private loggingInLoader: any; // Login loading screen.
-  private loginErrorMessage: string;  // Holds a login error message.
+  private loginErrorMessage: string;
+  private loginForm: FormGroup;
+  private loggingInLoader: any;
   
   /**
-   * Constructor. Binds the application-level events to their
-   * respective methods.
-   * @param navCtrl Controls navigation to other pages.
+   * Constructor.
+   * @param formBuilder   Allows advanced forms to be built.
+   * @param app           Angular main app.
+   * @param events        Allows communication between components.
+   * @param loadingCtrl   Provides loading screens.
    * @param loginManager  Manages logging in and out.
-   * @param alertCtrl Alerts controller.
-   * @param loadingCtrl Loading controller.
+   * @param navCtrl       Controls navigation to other pages.
    */
-  constructor(public navCtrl: NavController, private loginManager: LoginManager, private alertCtrl: AlertController, private loadingCtrl:LoadingController, private events: Events) {
-    /* Allows the <code>LoginManager</code> to access the top
-     * navigation controller.
-     */
-    loginManager.addNav(navCtrl);
+  constructor(
+    formBuilder: FormBuilder,
+    private app: App, private events: Events, private loadingCtrl: LoadingController,
+    private loginManager: LoginManagerService, private navCtrl: NavController
+  ) {
     
-    this.bindSubscribeEvents();
+    this.loginForm = formBuilder.group({
+      username: ['', Validators.compose([Validators.required, Validators.pattern('^[a-zA-Z]{1}[a-zA-Z0-9_]{4,31}$')])],
+      password: ['', Validators.compose([Validators.required, Validators.pattern('^[a-zA-Z 0-9 !"£$%^&*()]{5,31}$')])]
+    });
+    
+    this.events.subscribe('LoginPage login response', this.handleLoginResponse.bind(this));
   }
   
   /**
-   * Binds the application-level events to their respective methods.
+   * Attempts a login with the username and password provided by the
+   * respective input boxes, if they are in valid formats.
    */
-  private bindSubscribeEvents() {
-    this.events.subscribe('socket login response', this.handleLoginResponse.bind(this));
+  private doLogin() {
+    if (this.loginForm.valid) {
+      this.showLoggingInLoader();
+      this.loginManager.login(this.loginForm.value.username, this.loginForm.value.password);
+    }
   }
   
   /**
@@ -62,7 +74,7 @@ export class LoginPage {
       
       // If the login was a success, then redirect to the main app.
       if (res.success) {
-        this.toMainPage();
+        this.doLeavePage();
       } else {
         // Login was unsuccessful.
         
@@ -90,25 +102,24 @@ export class LoginPage {
   }
   
   /**
-   * Redirects to the main app.
+   * Redirects to the main page. If this is the root page, i.e. the
+   * app has just opened and the main page is this login page, then
+   * then root is changed to the tabs page. Otherwise, pop off this
+   * login page to go back to the settings page.
    */
-  private toMainPage() {
-    /* If it is the initial app load, then push the tabs page onto
-     * the navigation stack.
-     */
-    if (this.loginManager.initialScreen)
-      this.navCtrl.push(TabsPage, {}, {animate: true, direction: 'backward'});
-    /* If it is not the initial app load, then pop off the login page
-     * from the navigation stack.
-     */
-    else
+  private doLeavePage() {
+    if (this.navCtrl.canGoBack()) {
       this.navCtrl.pop();
+    } else {
+      this.app.getRootNav().setRoot(TabsPage, {}, {animate: true, direction: 'back'});
+    }
   }
   
   /**
    * Shows the logging in loader.
    */
   private showLoggingInLoader(): Promise<object> {
+    console.log('show logging in loader');
     this.loggingInLoader = this.loadingCtrl.create({
       content: "Logging in..."
     });
@@ -123,47 +134,11 @@ export class LoginPage {
   }
   
   /**
-   * Attempts to login using the username and password values from
-   * the input boxes.
+   * Runs when the object is destroyed. Unsubscribes the login
+   * response event, to stop listening for it.
    */
-  private doLogin() {
-    
-    if (!this.loginManager.loginAvailable()) {
-      /* If logging in is not available, then show an error stating
-       * that that app cannot connect to the server.
-       */
-      let alert = this.alertCtrl.create({
-        title: 'Login Error',
-        subTitle: 'Cannot connect to server.',
-        buttons: ['OK']
-      });
-      alert.present();
-      
-    } else if (this.username === '' || this.password === '') {
-      /* If then username of password are empty, then display an
-       * alert stating that both fields are required.
-       */
-      let alert = this.alertCtrl.create({
-        title: 'Login Error',
-        subTitle: 'All fields are required.',
-        buttons: ['OK']
-      });
-      alert.present();
-    
-    } else {
-      /* Attempt to login. Shows the loggin in loader and attempts a
-       * login.
-       */
-      this.showLoggingInLoader();
-      this.loginManager.login(this.username, this.password);
-    }
+  ngOnDestroy() {
+    this.events.unsubscribe('LoginPage login response');
   }
   
-  /**
-   * Handler for the skip login button. Takes the user to the main
-   * app without logging in.
-   */
-  private doSkipLogin() {
-    this.toMainPage();
-  }
 }

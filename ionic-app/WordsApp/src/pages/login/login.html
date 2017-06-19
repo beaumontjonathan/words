@@ -4,38 +4,62 @@
   </ion-navbar>
 </ion-header>
 
-
 <ion-content padding>
 
-  <div>
+  <!-- Shows error message is socket is not connected. -->
+  <ion-item no-lines *ngIf="!loginManager.loginAvailable()">
+    <ion-label style="color: #ea6153">
+      Login service unavailable as cannot connect to server.
+    </ion-label>
+  </ion-item>
 
-    <!-- Shows error message is socket is not connected. -->
-    <ion-item *ngIf="!loginManager.loginAvailable()">
-      <p>Login service unavailable as cannot connect to server.</p>
-    </ion-item>
+  <!-- Shows a login error message if one exists. -->
+  <ion-item no-lines *ngIf="loginErrorMessage">
+    <ion-label style="color: #ea6153">
+      {{loginErrorMessage}}
+    </ion-label>
+  </ion-item>
 
-    <!-- Shows a login error message if it exists. -->
-    <ion-item *ngIf="loginErrorMessage">
-      <p>{{loginErrorMessage}}</p>
-    </ion-item>
+  <form (ngSubmit)="doLogin()" [formGroup]="loginForm">
 
+    <!-- Username input field -->
     <ion-item>
-      <ion-input type="text" placeholder="Username" [(ngModel)]="username"></ion-input>
+      <ion-label>Username</ion-label>
+      <ion-input type="text" formControlName="username"></ion-input>
     </ion-item>
 
+    <!-- Invalid username error -->
+    <ion-item no-lines *ngIf="!loginForm.controls.username.valid && loginForm.controls.username.dirty">
+      <ion-label style="color: #ea6153">
+        Invalid username.
+      </ion-label>
+    </ion-item>
+
+    <!-- Password input field -->
     <ion-item>
-      <ion-input type="password" placeholder="Password" [(ngModel)]="password"></ion-input>
+      <ion-label>Password</ion-label>
+      <ion-input type="password" formControlName="password"></ion-input>
     </ion-item>
 
-  </div>
+    <!-- Invalid password error -->
+    <ion-item no-lines *ngIf="!loginForm.controls.password.valid && loginForm.controls.password.dirty">
+      <ion-label style="color: #ea6153">
+        Invalid password
+      </ion-label>
+    </ion-item>
 
-  <span>
-    <button ion-button color="primary" (click)="doLogin()">Login</button>
-  </span>
+    <br />
 
-  <!-- Shows a skip login button if it is the initial app load. -->
-  <span *ngIf="loginManager.initialScreen">
-    <button ion-button color="dark" (click)="doSkipLogin()" clear>Skip</button>
-  </span>
+    <!-- Login button -->
+    <span>
+      <button ion-button type="submit" color="primary" [disabled]="!loginManager.loginAvailable()">Login</button>
+    </span>
+
+    <!-- Skip login button -->
+    <span *ngIf="!popped">
+      <button type="button" ion-button color="dark" (click)="doLeavePage()" clear>Skip</button>
+    </span>
+
+  </form>
 
 </ion-content>

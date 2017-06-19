@@ -1,9 +1,10 @@
 // Module imports
+import {App, NavController} from 'ionic-angular';
 import {Component} from '@angular/core';
-import {NavController} from 'ionic-angular';
 
 // Project imports
-import {LoginManager} from "../../providers/login-manager.service";
+import {LoginPage} from "../login/login";
+import {LoginManagerService} from "../../providers/login-manager.service";
 
 /**
  * <h1>Settings Page</h1>
@@ -11,7 +12,7 @@ import {LoginManager} from "../../providers/login-manager.service";
  * page allows users to login and logout.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.0
+ * @version 1.0.1
  * @since   2017-06-14
  */
 @Component({
@@ -20,17 +21,18 @@ import {LoginManager} from "../../providers/login-manager.service";
 })
 export class SettingsPage {
   
+  
   /**
    * Constructor.
+   * @param app
    * @param navCtrl Controls navigation to other pages.
    * @param loginManager  Manages logging in and out.
    */
-  constructor(public navCtrl: NavController, private loginManager: LoginManager) {
-  
+  constructor(private app: App, public navCtrl: NavController, private loginManager: LoginManagerService) {
   }
   
   /**
-   * Logouts out the user.
+   * Logs the user out.
    */
   private logout() {
     this.loginManager.logout();
@@ -40,7 +42,7 @@ export class SettingsPage {
    * Takes the user to the login page.
    */
   private login() {
-    this.loginManager.navToLogin();
+    this.app.getRootNav().push(LoginPage);
   }
   
 }
