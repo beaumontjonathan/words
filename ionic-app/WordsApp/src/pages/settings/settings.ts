@@ -5,6 +5,7 @@ import {Component} from '@angular/core';
 // Project imports
 import {LoginPage} from "../login/login";
 import {LoginManagerService} from "../../providers/login-manager.service";
+import {SettingsManagerService} from "../../providers/settings-manager.service";
 
 /**
  * <h1>Settings Page</h1>
@@ -12,7 +13,7 @@ import {LoginManagerService} from "../../providers/login-manager.service";
  * page allows users to login and logout.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.1
+ * @version 1.1.0
  * @since   2017-06-14
  */
 @Component({
@@ -21,14 +22,13 @@ import {LoginManagerService} from "../../providers/login-manager.service";
 })
 export class SettingsPage {
   
-  
   /**
    * Constructor.
    * @param app
    * @param navCtrl Controls navigation to other pages.
    * @param loginManager  Manages logging in and out.
    */
-  constructor(private app: App, public navCtrl: NavController, private loginManager: LoginManagerService) {
+  constructor(private app: App, public navCtrl: NavController, private loginManager: LoginManagerService, private settingsManager: SettingsManagerService) {
   }
   
   /**

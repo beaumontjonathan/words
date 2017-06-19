@@ -7,6 +7,8 @@
 </ion-header>
 
 <ion-content>
+
+  <!-- Contains account settings -->
   <ion-card>
     <ion-card-header>
       <h1>Account</h1>
@@ -19,4 +21,25 @@
       <button *ngIf="!loginManager.loggedIn" ion-button (click)="login()" [disabled]="!loginManager.loginAvailable()">Login</button>
     </ion-card-content>
   </ion-card>
+
+  <!-- Contains settings about logging in -->
+  <ion-card>
+    <ion-card-header>
+      <h1>Logging In</h1>
+    </ion-card-header>
+    <ion-card-content>
+
+      <ion-list inset>
+
+        <ion-item>
+          <ion-label>Login on disconnect</ion-label>
+          <ion-toggle [(ngModel)]="settingsManager.loginOnDisconnect"></ion-toggle>
+        </ion-item>
+
+      </ion-list>
+
+    </ion-card-content>
+  </ion-card>
+
+
 </ion-content>

@@ -17,6 +17,7 @@ import {LoginPage} from "../pages/login/login";
 import {LoginManagerService} from "../providers/login-manager.service";
 import {WordsManagerService} from "../providers/words-manager.service";
 import {SocketManagerService} from "../providers/socket-manager.service";
+import {SettingsManagerService} from "../providers/settings-manager.service";
 
 @NgModule({
 declarations: [
@@ -48,7 +49,8 @@ MyApp,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     SocketManagerService,
     WordsManagerService,
-    LoginManagerService
+    LoginManagerService,
+    SettingsManagerService
   ]
 })
 export class AppModule {}

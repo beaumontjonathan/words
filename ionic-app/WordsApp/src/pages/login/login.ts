@@ -1,6 +1,6 @@
 // Module imports
 import {Component, OnDestroy} from "@angular/core";
-import {App, Events, LoadingController, NavController} from "ionic-angular";
+import {App, Events, NavController} from "ionic-angular";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 
 // Project imports
@@ -15,7 +15,7 @@ import {LoginManagerService} from "../../providers/login-manager.service";
  * page.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1
  * @since   2017-06-16
  */
 @Component({
@@ -26,20 +26,18 @@ export class LoginPage implements OnDestroy {
   
   private loginErrorMessage: string;
   private loginForm: FormGroup;
-  private loggingInLoader: any;
   
   /**
    * Constructor.
    * @param formBuilder   Allows advanced forms to be built.
    * @param app           Angular main app.
    * @param events        Allows communication between components.
-   * @param loadingCtrl   Provides loading screens.
    * @param loginManager  Manages logging in and out.
    * @param navCtrl       Controls navigation to other pages.
    */
   constructor(
     formBuilder: FormBuilder,
-    private app: App, private events: Events, private loadingCtrl: LoadingController,
+    private app: App, private events: Events,
     private loginManager: LoginManagerService, private navCtrl: NavController
   ) {
     
@@ -57,7 +55,6 @@ export class LoginPage implements OnDestroy {
    */
   private doLogin() {
     if (this.loginForm.valid) {
-      this.showLoggingInLoader();
       this.loginManager.login(this.loginForm.value.username, this.loginForm.value.password);
     }
   }
@@ -69,36 +66,32 @@ export class LoginPage implements OnDestroy {
    * @param res Contains the login response data.
    */
   private handleLoginResponse(res: LoginResponse) {
-    // Dismiss the login loading screen.
-    this.dismissLoggingInLoader().then(() => {
+    // If the login was a success, then redirect to the main app.
+    if (res.success) {
+      this.doLeavePage();
+    } else {
+      // Login was unsuccessful.
       
-      // If the login was a success, then redirect to the main app.
-      if (res.success) {
-        this.doLeavePage();
-      } else {
-        // Login was unsuccessful.
-        
-        // Decides on a login error message.
-        let error: string = 'Unknown login error.';
-        if (res.alreadyLoggedIn) {
-          error = 'Login unsuccessful. You are already logged in.';
-        } else if (res.invalidUsername) {
-          error = 'Login unsuccessful. Username invalid.';
-        } else if (res.invalidPassword) {
-          error = 'Login unsuccessful. Password invalid.';
-        } else if (res.incorrectUsername) {
-          error = 'Login unsuccessful. Username incorrect.';
-        } else if (res.incorrectPassword) {
-          error = 'Login unsuccessful. Password incorrect.';
-        }
-        
-        /* Logs the error message to the console and displays it on
-         * the page.
-         */
-        console.log(error);
-        this.loginErrorMessage = error;
+      // Decides on a login error message.
+      let error: string = 'Unknown login error.';
+      if (res.alreadyLoggedIn) {
+        error = 'Login unsuccessful. You are already logged in.';
+      } else if (res.invalidUsername) {
+        error = 'Login unsuccessful. Username invalid.';
+      } else if (res.invalidPassword) {
+        error = 'Login unsuccessful. Password invalid.';
+      } else if (res.incorrectUsername) {
+        error = 'Login unsuccessful. Username incorrect.';
+      } else if (res.incorrectPassword) {
+        error = 'Login unsuccessful. Password incorrect.';
       }
-    });
+      
+      /* Logs the error message to the console and displays it on
+       * the page.
+       */
+      console.log(error);
+      this.loginErrorMessage = error;
+    }
   }
   
   /**
@@ -113,24 +106,6 @@ export class LoginPage implements OnDestroy {
     } else {
       this.app.getRootNav().setRoot(TabsPage, {}, {animate: true, direction: 'back'});
     }
-  }
-  
-  /**
-   * Shows the logging in loader.
-   */
-  private showLoggingInLoader(): Promise<object> {
-    console.log('show logging in loader');
-    this.loggingInLoader = this.loadingCtrl.create({
-      content: "Logging in..."
-    });
-    return this.loggingInLoader.present();
-  }
-  
-  /**
-   * Dismisses the logging in loader.
-   */
-  private dismissLoggingInLoader(): Promise<object> {
-    return this.loggingInLoader.dismiss();
   }
   
   /**
