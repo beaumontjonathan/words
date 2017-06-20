@@ -7,6 +7,7 @@ import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {TabsPage} from "../tabs/tabs";
 import {LoginResponse} from "../../../../../words-server/interfaces/Login";
 import {LoginManagerService} from "../../providers/login-manager.service";
+import {SettingsManagerService} from "../../providers/settings-manager.service";
 
 /**
  * <h1>Login Page</h1>
@@ -15,7 +16,7 @@ import {LoginManagerService} from "../../providers/login-manager.service";
  * page.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.1
+ * @version 1.2.0
  * @since   2017-06-16
  */
 @Component({
@@ -47,6 +48,10 @@ export class LoginPage implements OnDestroy {
     });
     
     this.events.subscribe('LoginPage login response', this.handleLoginResponse.bind(this));
+    
+    this.events.subscribe('loginOnStart', (creds) => {
+      this.loginManager.login(creds.username, creds.password);
+    })
   }
   
   /**

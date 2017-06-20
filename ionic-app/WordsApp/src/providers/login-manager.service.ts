@@ -14,7 +14,7 @@ import {SettingsManagerService} from "./settings-manager.service";
  * app and the <code>SocketManagerService</code>
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.3.0
  * @since   2017-06-16
  */
 @Injectable()
@@ -107,6 +107,7 @@ export class LoginManagerService {
     this.dismissLoggingInLoader().then(() => {
       this.credentials.valid = res.success;
       if (res.success) {
+        this.settingsManager.loginCredentials = {username: this.credentials.username, password: this.credentials.password};
         this._loggedIn = true;
         if (this.reconnecting) {
           this.reconnecting = false;

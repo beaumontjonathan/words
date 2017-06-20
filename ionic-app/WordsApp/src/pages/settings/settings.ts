@@ -13,7 +13,7 @@ import {SettingsManagerService} from "../../providers/settings-manager.service";
  * page allows users to login and logout.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.2.0
  * @since   2017-06-14
  */
 @Component({
