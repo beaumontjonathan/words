@@ -6,6 +6,7 @@ import {Events} from "ionic-angular";
 // Project imports
 import {LoginRequest, LoginResponse} from "../../../../words-server/interfaces/Login";
 import {LogoutResponse} from "../../../../words-server/interfaces/Logout";
+import {AddWordRequest, AddWordResponse} from "../../../../words-server/interfaces/AddWord";
 
 /**
  * <h1>Socket Handler</h1>
@@ -13,7 +14,7 @@ import {LogoutResponse} from "../../../../words-server/interfaces/Logout";
  * connection.
  *
  * @author  Jonathan Beaumont
- * @version 1.0.2
+ * @version 1.1.0
  * @since   2017-06-16
  */
 @Injectable()
@@ -63,6 +64,7 @@ export class SocketManagerService {
     // words api events
     this.socket.on('login response', this.loginResponse.bind(this));
     this.socket.on('logout response', this.logoutResponse.bind(this));
+    this.socket.on('addWord response', this.addWordResponse.bind(this));
   }
   
   /**
@@ -71,7 +73,6 @@ export class SocketManagerService {
    */
   private connectEvent(): void {
     this._socketConnected = true;
-    console.log('Connected to worker node.');
     this.events.publish('LoginManager socket connect');
   }
   
@@ -82,7 +83,6 @@ export class SocketManagerService {
    */
   private disconnectEvent(reason: string): void {
     this._socketConnected = false;
-    console.log('Disconnecting socket. Reason: ' + reason);
     this.events.publish('LoginManager socket disconnect', reason);
   }
   
@@ -140,6 +140,23 @@ export class SocketManagerService {
    */
   private logoutResponse(res: LogoutResponse): void {
     this.events.publish('LoginManager logout response', res);
+  }
+  
+  /**
+   * Emits an add word request to the server, containing the word to
+   * be added.
+   * @param req Contains the new word.
+   */
+  public addWordRequest(req: AddWordRequest): void {
+    this.socket.emit('addWord request', req);
+  }
+  
+  /**
+   * Processes the response to adding a new word by passing a message
+   * to the <code>WordsManager</code> with the socket response data.
+   */
+  private addWordResponse(res: AddWordResponse): void {
+    this.events.publish('WordsManager addWord response', res);
   }
 
 }

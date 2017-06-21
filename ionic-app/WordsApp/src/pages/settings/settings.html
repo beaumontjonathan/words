@@ -11,7 +11,7 @@
   <!-- Contains account settings -->
   <ion-card>
     <ion-card-header>
-      <h1>Account</h1>
+      <ion-card-title>Account</ion-card-title>
     </ion-card-header>
     <ion-card-content>
       <!-- Shows logout button if the user is logged in -->
@@ -25,7 +25,7 @@
   <!-- Contains settings about logging in -->
   <ion-card>
     <ion-card-header>
-      <h1>Logging In</h1>
+      <ion-card-title>Logging In</ion-card-title>
     </ion-card-header>
     <ion-card-content>
 
@@ -46,5 +46,23 @@
     </ion-card-content>
   </ion-card>
 
+  <!-- Contains settings for syncing words -->
+  <ion-card>
+    <ion-card-header>
+      <ion-card-title>Syncing data</ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+
+      <ion-list inset>
+
+        <ion-item>
+          <ion-label>Sync new words</ion-label>
+          <ion-toggle [(ngModel)]="settingsManager.syncNewWords"></ion-toggle>
+        </ion-item>
+
+      </ion-list>
+
+    </ion-card-content>
+  </ion-card>
 
 </ion-content>

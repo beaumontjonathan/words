@@ -12,7 +12,7 @@ import {WordsManagerService} from "../../providers/words-manager.service";
  * allows users to add new words to the list of words.
  *
  * @author  Jonathan Beaumont
- * @version 1.1.0
+ * @version 1.1.1
  * @since   2017-06-14
  */
 @Component({
@@ -26,8 +26,9 @@ export class HomePage {
   
   /**
    * Constructor.
-   * @param navCtrl Controls navigation to other pages.
+   * @param navCtrl Controls navigation to other pages.`
    * @param wordsManager  Holds and manipulates the list of words.
+   * @param formBuilder Allows advanced forms to be built.
    */
   constructor(public navCtrl: NavController, private wordsManager: WordsManagerService, private formBuilder: FormBuilder) {
     this.addWordChange = false;
@@ -43,7 +44,7 @@ export class HomePage {
     if (!this.addWordForm.valid) {
     } else {
       this.addWordChange = false;
-      this.wordsManager.addWord(this.addWordForm.value.word, console.log);
+      this.wordsManager.addWord(this.addWordForm.value.word);
       this.addWordForm.reset();
     }
   }

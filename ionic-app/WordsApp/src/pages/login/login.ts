@@ -7,7 +7,7 @@ import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 import {TabsPage} from "../tabs/tabs";
 import {LoginResponse} from "../../../../../words-server/interfaces/Login";
 import {LoginManagerService} from "../../providers/login-manager.service";
-import {SettingsManagerService} from "../../providers/settings-manager.service";
+import {WordsManagerService} from "../../providers/words-manager.service";
 
 /**
  * <h1>Login Page</h1>
@@ -16,7 +16,7 @@ import {SettingsManagerService} from "../../providers/settings-manager.service";
  * page.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.2.1
  * @since   2017-06-16
  */
 @Component({
@@ -35,11 +35,13 @@ export class LoginPage implements OnDestroy {
    * @param events        Allows communication between components.
    * @param loginManager  Manages logging in and out.
    * @param navCtrl       Controls navigation to other pages.
+   * @param wordsManager  Holds and manipulates the list of words.
    */
   constructor(
     formBuilder: FormBuilder,
     private app: App, private events: Events,
-    private loginManager: LoginManagerService, private navCtrl: NavController
+    private loginManager: LoginManagerService, private navCtrl: NavController,
+    wordsManager: WordsManagerService
   ) {
     
     this.loginForm = formBuilder.group({

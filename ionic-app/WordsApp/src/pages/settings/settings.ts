@@ -13,7 +13,7 @@ import {SettingsManagerService} from "../../providers/settings-manager.service";
  * page allows users to login and logout.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.3.0
  * @since   2017-06-14
  */
 @Component({
@@ -27,6 +27,7 @@ export class SettingsPage {
    * @param app
    * @param navCtrl Controls navigation to other pages.
    * @param loginManager  Manages logging in and out.
+   * @param settingsManager Manages user settings.
    */
   constructor(private app: App, public navCtrl: NavController, private loginManager: LoginManagerService, private settingsManager: SettingsManagerService) {
   }

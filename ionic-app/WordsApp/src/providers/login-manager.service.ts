@@ -14,7 +14,7 @@ import {SettingsManagerService} from "./settings-manager.service";
  * app and the <code>SocketManagerService</code>
  *
  * @author  Jonathan Beaumont
- * @version 1.3.0
+ * @version 1.3.1
  * @since   2017-06-16
  */
 @Injectable()
@@ -25,7 +25,7 @@ export class LoginManagerService {
   private loginAlert;  // Holds the alert for logging in.
   // Holds the user's login credentials.
   private credentials: {username: string, password: string, valid: boolean};
-  private loggingInLoader: any;
+  private loggingInLoader: any; // The logging in loading screen.
   private reconnecting: boolean;
   
   /**
@@ -85,16 +85,21 @@ export class LoginManagerService {
   }
   
   /**
-   * Run when the socket disconnects. Shows an alert if the user was
-   * logged in.
+   * Runs when the socket disconnects. Hides the login alert if it
+   * has not been dismissed by the user, then shows a new alert
+   * telling the user that they have been logged out due to a
+   * connection issue to the server.
    * @param reason The reason for the disconnect.
    */
   private handleSocketDisconnect(reason: string) {
-    this.dismissLoginAlert();
-    if (this._loggedIn) {
-      this._loggedIn = false;
-      this.showLogoutAlert();
-    }
+    this.dismissLoggingInLoader()
+      .then(() => {
+        this.dismissLoginAlert();
+        if (this._loggedIn) {
+          this._loggedIn = false;
+          this.showLogoutAlert();
+        }
+      })
   }
   
   /**
@@ -109,6 +114,7 @@ export class LoginManagerService {
       if (res.success) {
         this.settingsManager.loginCredentials = {username: this.credentials.username, password: this.credentials.password};
         this._loggedIn = true;
+        this.events.publish('WordsManager sync new words');
         if (this.reconnecting) {
           this.reconnecting = false;
           this.showLoginAlert(res.success);
@@ -179,7 +185,7 @@ export class LoginManagerService {
     else
       return new Promise((resolve, reject) => {
         resolve();
-      })
+      });
   }
   
   /**
@@ -206,7 +212,6 @@ export class LoginManagerService {
    * Shows the logging in loader.
    */
   private showLoggingInLoader(): Promise<object> {
-    console.log('showing loader...');
     this.loggingInLoader = this.loadingCtrl.create({
       content: "Logging in..."
     });
@@ -217,6 +222,12 @@ export class LoginManagerService {
    * Dismisses the logging in loader.
    */
   private dismissLoggingInLoader(): Promise<object> {
-    return this.loggingInLoader.dismiss();
+    if (this.loggingInLoader) {
+      return this.loggingInLoader.dismiss();
+    } else {
+      return new Promise((resolve, reject) => {
+        resolve();
+      });
+    }
   }
 }
