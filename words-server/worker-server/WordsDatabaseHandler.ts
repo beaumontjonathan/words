@@ -20,7 +20,7 @@ const DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.2.1
  * @since   2017-06-08
  */
 export class WordsDatabaseHandler {
@@ -226,7 +226,6 @@ export class WordsDatabaseHandler {
    * @param callback  Function to be run after the check.
    */
   public verifyCredentials(username: string, password: string, callback: (correctUsername: boolean, correctPassword?: boolean) => void): void {
-    console.log('final');
     this.pool.getConnection((err: IError, conn: IConnection) => {
       if (err) throw err;
       let statement = 'SELECT * FROM ' + WordsDatabaseHandler.TABLE.USERS.NAME + ' WHERE ' + WordsDatabaseHandler.TABLE.USERS.FIELD.USERNAME + '=?';

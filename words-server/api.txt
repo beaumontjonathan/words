@@ -45,6 +45,24 @@ Add Word Master
         Name:   "addWordMaster response"
         Data:   { username: string, res: AddWordResponse }
 
+Add Words
+    Request:
+        Name:   "addWords request"
+        Data:   { words: string[] }
+
+    Response:
+        Name:   "addWords response"
+        Data:   { success: boolean, isLoggedIn: boolean, addWordResponse: AddWordResponse[] }
+
+Add Word Master
+    Request:
+        Name:   "addWordsMaster request"
+        Data:   { username: string, res: AddWordsResponse }
+
+    Response:
+        Name:   "addWordsMaster request"
+        Data:   { username: string, res: AddWordsResponse }
+
 Remove Word
     Request:
         Name:   "removeWord request"

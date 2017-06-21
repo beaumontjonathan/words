@@ -237,8 +237,7 @@ var WorkerServer = (function () {
         }
     };
     /**
-     * Processes a request to add a word. Returns the success of adding
-     * a word to a callback function.
+     * Processes a request to add a word.
      * @param req Contains the data for adding a new word.
      * @param socket  The socket from which the request came.
      */
@@ -343,6 +342,115 @@ var WorkerServer = (function () {
         socket.emit('addWord response', res);
     };
     /**
+     * Processes a request to add a list of words.
+     * @param req Contains the data for adding new words.
+     * @param socket  The socket from which the request came.
+     */
+    WorkerServer.prototype.addWordsRequestEvent = function (req, socket) {
+        var _this = this;
+        var res = { success: false, isLoggedIn: false, invalidNumberOfWords: false };
+        if (req.words.length > 0 && req.words.length < 5) {
+            res.invalidNumberOfWords = true;
+            if (this.loginManager.isLoggedIn(socket)) {
+                res.success = true;
+                res.isLoggedIn = true;
+                var username_2 = this.loginManager.getUsernameFromSocket(socket);
+                var addWordResponsesData_1 = [];
+                var counter_1 = req.words.length;
+                req.words.forEach(function (word, index) {
+                    _this.addWordsProcessWord(username_2, word, function (someData) {
+                        addWordResponsesData_1[index] = someData;
+                        if (--counter_1 <= 0) {
+                            // sorted out all that shit.
+                            res.addWordResponses = addWordResponsesData_1;
+                            _this.addWordsMasterRequest(username_2, res);
+                            _this.addWordsForAllConnectedClients(username_2, res);
+                        }
+                    });
+                });
+            }
+            else {
+                this.addWordsResponse(socket, res);
+            }
+        }
+        else {
+            this.addWordsResponse(socket, res);
+        }
+    };
+    /**
+     * Sends a request to the master server containing the add words
+     * data.
+     * @param username  Username of the user who added the word.
+     * @param res Contains information about adding the words.
+     */
+    WorkerServer.prototype.addWordsMasterRequest = function (username, res) {
+        if (this.masterSocketConnected) {
+            this.masterClientSocket.addWordsMasterRequest({ username: username, res: res });
+        }
+    };
+    /**
+     * Handles a response from the master server about a word being
+     * added. Emits a message to all connected users with the username
+     * matching that of the add word username.
+     * @param res Contains data about the add words.
+     */
+    WorkerServer.prototype.addWordsMasterResponse = function (res) {
+        this.addWordsForAllConnectedClients(res.username, res.res);
+    };
+    /**
+     * Runs the <code>addWordsResponse</code> method, emitting an add
+     * words response, fr all logged in sockets with the username
+     * provided.
+     * @param username  The username of the user who added the words.
+     * @param res Contains information about the add words success.
+     */
+    WorkerServer.prototype.addWordsForAllConnectedClients = function (username, res) {
+        var _this = this;
+        this.loginManager.forEachSocketWithUsername(username, function (socket) {
+            _this.addWordsResponse(socket, res);
+        });
+    };
+    /**
+     * Attempts to add a new word to the database for a user provided.
+     * Returns, to a callback function, the validity and success of
+     * adding the word.
+     * @param username  The username of the user who added the words.
+     * @param word      The word to be added to the database.
+     * @param callback  Function to be run after.
+     */
+    WorkerServer.prototype.addWordsProcessWord = function (username, word, callback) {
+        var _this = this;
+        var isValidWord = this.isValidWord(word);
+        var addWordResponseData = { success: false, word: word, isValidWord: isValidWord, wordAlreadyAdded: false };
+        if (!isValidWord) {
+            callback(addWordResponseData);
+        }
+        else {
+            this.dbHandler.containsWord(username, word, function (alreadyAdded) {
+                if (alreadyAdded) {
+                    addWordResponseData.wordAlreadyAdded = true;
+                    callback(addWordResponseData);
+                }
+                else {
+                    _this.dbHandler.addWord(username, word, function (success) {
+                        addWordResponseData.success = success;
+                        callback(addWordResponseData);
+                    });
+                }
+            });
+        }
+    };
+    /**
+     * Emits a socket.io <code>addWords response</code> message to a
+     * client socket, containing information about the successes of the
+     * add words request.
+     * @param socket  The socket to send the response to.
+     * @param res Contains information about adding the words.
+     */
+    WorkerServer.prototype.addWordsResponse = function (socket, res) {
+        socket.emit('addWords response', res);
+    };
+    /**
      * Processes a request to remove a word. Returns the success of
      * removing the word to a callback function.
      * @param req Contains the data for adding a new word.
@@ -358,19 +466,19 @@ var WorkerServer = (function () {
             if (this.isValidWord(req.word)) {
                 // Word is valid.
                 res.isValidWord = true;
-                var username_2 = this.loginManager.getUsernameFromSocket(socket);
+                var username_3 = this.loginManager.getUsernameFromSocket(socket);
                 // Checks whether the user has added the word.
-                this.dbHandler.containsWord(username_2, res.word, function (containsWord) {
+                this.dbHandler.containsWord(username_3, res.word, function (containsWord) {
                     if (containsWord) {
                         // User has already added the word.
                         res.wordNotYetAdded = false;
                         // Remove word from database.
-                        _this.dbHandler.deleteWord(username_2, req.word, function (wordRemoved) {
+                        _this.dbHandler.deleteWord(username_3, req.word, function (wordRemoved) {
                             if (wordRemoved) {
                                 // Word removed successfully.
                                 res.success = true;
-                                _this.removeWordMasterRequest(username_2, res);
-                                _this.removeWorkForAllConnectedClients(username_2, res);
+                                _this.removeWordMasterRequest(username_3, res);
+                                _this.removeWorkForAllConnectedClients(username_3, res);
                             }
                             else {
                                 // Word not removed.

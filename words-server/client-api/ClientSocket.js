@@ -9,7 +9,7 @@ var readline_1 = require("readline");
  * application socket.io API. Connects to a Worker Server node.
  *
  * @author  Jonathan Beaumont
- * @version 1.5.1
+ * @version 1.6.0
  * @since   2017-06-06
  */
 var ClientSocket = (function () {
@@ -87,14 +87,34 @@ var ClientSocket = (function () {
                         response = 'Usage: create account <username> <password>';
                     }
                     break;
-                // Add word command
+                // Add word(s) command
                 case "add":
-                    if (words.length === 3 && words[1] === 'word') {
-                        response = 'Attempting to add word...';
-                        this.addWordRequest({ word: command.replace('add word ', '').trim() });
+                    if (words.length >= 2 && words[1] === 'word') {
+                        // Add word command
+                        if (words.length === 3) {
+                            response = 'Attempting to add word...';
+                            this.addWordRequest({ word: command.replace('add word ', '').trim() });
+                        }
+                        else {
+                            response = 'Usage: add word <word>';
+                        }
                     }
-                    else {
-                        response = 'Usage: add word <word>';
+                    else if (words.length >= 2 && words[1] === 'words') {
+                        // Add words command
+                        var wordsToAdd = [];
+                        for (var i = 2, length_1 = words.length; i < length_1; i++) {
+                            var wordToAdd = words[i].trim();
+                            if (wordToAdd.length > 0) {
+                                wordsToAdd.push(wordToAdd);
+                            }
+                        }
+                        if (wordsToAdd.length > 0) {
+                            response = 'Attempting to add words...';
+                            this.addWordsRequest({ words: wordsToAdd });
+                        }
+                        else {
+                            response = 'Usage: add words <word 1> <word 2> ... <word n>';
+                        }
                     }
                     break;
                 // Remove word command
@@ -142,6 +162,7 @@ var ClientSocket = (function () {
         this.socket.on('logout response', this.logoutResponse.bind(this));
         this.socket.on('createAccount response', this.createAccountResponse.bind(this));
         this.socket.on('addWord response', this.addWordResponse.bind(this));
+        this.socket.on('addWords response', this.addWordsResponse.bind(this));
         this.socket.on('removeWord response', this.removeWordResponse.bind(this));
         this.socket.on('getWords response', this.getWordsResponse.bind(this));
     };
@@ -277,6 +298,64 @@ var ClientSocket = (function () {
         }
         else {
             console.log('Error, word not added.');
+        }
+    };
+    /**
+     * Emits a request to the server to add n words to the account of
+     * the logged in user.
+     * @param req Contains the new words.
+     */
+    ClientSocket.prototype.addWordsRequest = function (req) {
+        this.socket.emit('addWords request', req);
+    };
+    /**
+     * Processes the response to an add words request by printing out
+     * an explanation of the words added.
+     * @param res
+     */
+    ClientSocket.prototype.addWordsResponse = function (res) {
+        if (res.success) {
+            var numWords = res.addWordResponses.length;
+            var successes = [], alreadyAddeds = [], invalidWords = [];
+            for (var i = 0; i < numWords; i++) {
+                var addWordResponseData = res.addWordResponses[i];
+                if (addWordResponseData.success) {
+                    successes.push(addWordResponseData.word);
+                }
+                else if (addWordResponseData.wordAlreadyAdded) {
+                    alreadyAddeds.push(addWordResponseData.word);
+                }
+                else if (!addWordResponseData.isValidWord) {
+                    invalidWords.push(addWordResponseData.word);
+                }
+            }
+            if (successes.length > 0) {
+                console.log('Successfully added words:');
+                for (var i = 0, successesLength = successes.length; i < successesLength; i++) {
+                    console.log('  ' + successes[i]);
+                }
+            }
+            if (invalidWords.length > 0) {
+                console.log('Invalid words words:');
+                for (var i = 0, invalidsLength = invalidWords.length; i < invalidsLength; i++) {
+                    console.log('  ' + invalidWords[i]);
+                }
+            }
+            if (alreadyAddeds.length > 0) {
+                console.log('Words already added:');
+                for (var i = 0, alreadyAddedsLength = alreadyAddeds.length; i < alreadyAddedsLength; i++) {
+                    console.log('  ' + alreadyAddeds[i]);
+                }
+            }
+        }
+        else if (!res.isLoggedIn) {
+            console.log('You must login before you can attempt to add words.');
+        }
+        else if (res.invalidNumberOfWords) {
+            console.log('Error adding words. Invalid number of words.');
+        }
+        else {
+            console.log('Unknown error adding words.');
         }
     };
     /**

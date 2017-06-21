@@ -8,7 +8,7 @@ var socketIOClient = require("socket.io-client");
  * server.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.3.0
  * @since   2017-06-05
  */
 var MasterClientSocket = (function () {
@@ -42,6 +42,7 @@ var MasterClientSocket = (function () {
         this.socket.on('disconnect', this.disconnectEvent.bind(this));
         // words api events
         this.socket.on('addWordMaster response', this.addWordMasterResponse.bind(this));
+        this.socket.on('addWordsMaster response', this.addWordsMasterResponse.bind(this));
         this.socket.on('removeWordMaster response', this.removeWordMasterResponse.bind(this));
     };
     /**
@@ -75,6 +76,22 @@ var MasterClientSocket = (function () {
      */
     MasterClientSocket.prototype.addWordMasterResponse = function (res) {
         this.workerServer.addWordMasterResponse(res);
+    };
+    /**
+     * Sends an add words request to the master server along with the
+     * request data about adding n words.
+     * @param req Contains the add words response information.
+     */
+    MasterClientSocket.prototype.addWordsMasterRequest = function (req) {
+        this.socket.emit('addWordsMaster request', req);
+    };
+    /**
+     * Handles the socket <code>addWordsMaster response</code> by
+     * running a <code>WorkerServer</code> method.
+     * @param res Contains the add words response information.
+     */
+    MasterClientSocket.prototype.addWordsMasterResponse = function (res) {
+        this.workerServer.addWordsMasterResponse(res);
     };
     /**
      * Send a remove word request to the master server along with the

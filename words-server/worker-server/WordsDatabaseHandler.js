@@ -17,7 +17,7 @@ var DATABASE_PASSWORD = 'password';
  * credentials.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.2.1
  * @since   2017-06-08
  */
 var WordsDatabaseHandler = (function () {
@@ -190,7 +190,6 @@ var WordsDatabaseHandler = (function () {
      * @param callback  Function to be run after the check.
      */
     WordsDatabaseHandler.prototype.verifyCredentials = function (username, password, callback) {
-        console.log('final');
         this.pool.getConnection(function (err, conn) {
             if (err)
                 throw err;

@@ -5,6 +5,7 @@ import {LogoutResponse} from "../interfaces/Logout";
 import {CreateAccountRequest, CreateAccountResponse} from "../interfaces/CreateAccount";
 import {AddWordRequest} from "../interfaces/AddWord";
 import {RemoveWordRequest} from "../interfaces/RemoveWord";
+import {AddWordsRequest} from "../interfaces/AddWords";
 
 /**
  * <h1>Worker Server Client socket.io Socket Wrapper</h1>
@@ -13,7 +14,7 @@ import {RemoveWordRequest} from "../interfaces/RemoveWord";
  * requests.
  *
  * @author  Jonathan Beaumont
- * @version 1.5.0
+ * @version 1.6.0
  * @since   2017-06-05
  */
 export class ClientSocket {
@@ -46,6 +47,7 @@ export class ClientSocket {
     this.socket.on('logout request', this.logoutRequestEvent.bind(this));
     this.socket.on('createAccount request', this.createAccountEvent.bind(this));
     this.socket.on('addWord request', this.addWordRequestEvent.bind(this));
+    this.socket.on('addWords request', this.addWordsRequestEvent.bind(this));
     this.socket.on('removeWord request', this.removeWordRequestEvent.bind(this));
     this.socket.on('getWords request', this.getWordsRequestEvent.bind(this));
   }
@@ -110,6 +112,16 @@ export class ClientSocket {
    */
   private addWordRequestEvent(req: AddWordRequest): void {
     this.workerServer.addWordRequestEvent(req, this.socket);
+  }
+  
+  /**
+   * Handles the socket <code>addWords request</code> event by
+   * passing the request data to the <code>WorkerServer</code> method
+   * to process.
+   * @param req Contains the add words data.
+   */
+  private addWordsRequestEvent(req: AddWordsRequest): void {
+    this.workerServer.addWordsRequestEvent(req, this.socket);
   }
   
   /**

@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * Worker Servers.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.3.0
  * @since   2017-06-05
  */
 var WorkerServerSocket = (function () {
@@ -31,6 +31,7 @@ var WorkerServerSocket = (function () {
         this.socket.on('error', this.errorEvent.bind(this));
         // words api events
         this.socket.on('addWordMaster request', this.addWordEvent.bind(this));
+        this.socket.on('addWordsMaster request', this.addWordsEvent.bind(this));
         this.socket.on('removeWordMaster request', this.removeWordEvent.bind(this));
     };
     /**
@@ -57,6 +58,14 @@ var WorkerServerSocket = (function () {
      */
     WorkerServerSocket.prototype.addWordEvent = function (req) {
         this.socket.broadcast.emit('addWordMaster response', req);
+    };
+    /**
+     * Handles the socket <code>addWordsMaster request</code> event by
+     * broadcasting the request data to all connected worker servers.
+     * @param req Contains the add words response information.
+     */
+    WorkerServerSocket.prototype.addWordsEvent = function (req) {
+        this.socket.broadcast.emit('addWordsMaster response', req);
     };
     /**
      * Handles the socket <code>removeWordMaster request</code> event

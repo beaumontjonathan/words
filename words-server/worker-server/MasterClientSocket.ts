@@ -5,6 +5,7 @@ import * as socketIOClient from 'socket.io-client';
 import {WorkerServer} from "./WorkerServer";
 import {AddWordMaster} from "../interfaces/AddWord";
 import {RemoveWordMaster} from "../interfaces/RemoveWord";
+import {AddWordsMaster} from "../interfaces/AddWords";
 
 /**
  * <h1>Client Socket for socket.io Connection to Master Server</h1>
@@ -12,7 +13,7 @@ import {RemoveWordMaster} from "../interfaces/RemoveWord";
  * server.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.0
+ * @version 1.3.0
  * @since   2017-06-05
  */
 export class MasterClientSocket {
@@ -61,6 +62,7 @@ export class MasterClientSocket {
 
     // words api events
     this.socket.on('addWordMaster response', this.addWordMasterResponse.bind(this));
+    this.socket.on('addWordsMaster response', this.addWordsMasterResponse.bind(this));
     this.socket.on('removeWordMaster response', this.removeWordMasterResponse.bind(this));
   }
   
@@ -98,6 +100,24 @@ export class MasterClientSocket {
    */
   private addWordMasterResponse(res: AddWordMaster): void {
     this.workerServer.addWordMasterResponse(res);
+  }
+  
+  /**
+   * Sends an add words request to the master server along with the
+   * request data about adding n words.
+   * @param req Contains the add words response information.
+   */
+  public addWordsMasterRequest(req: AddWordsMaster): void {
+    this.socket.emit('addWordsMaster request', req);
+  }
+  
+  /**
+   * Handles the socket <code>addWordsMaster response</code> by
+   * running a <code>WorkerServer</code> method.
+   * @param res Contains the add words response information.
+   */
+  private addWordsMasterResponse(res: AddWordsMaster): void {
+    this.workerServer.addWordsMasterResponse(res);
   }
   
   /**
