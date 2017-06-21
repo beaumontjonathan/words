@@ -16,7 +16,7 @@ import {WordsManagerService} from "../../providers/words-manager.service";
  * page.
  *
  * @author  Jonathan Beaumont
- * @version 1.2.1
+ * @version 1.2.2
  * @since   2017-06-16
  */
 @Component({
@@ -52,7 +52,9 @@ export class LoginPage implements OnDestroy {
     this.events.subscribe('LoginPage login response', this.handleLoginResponse.bind(this));
     
     this.events.subscribe('loginOnStart', (creds) => {
-      this.loginManager.login(creds.username, creds.password);
+      if (this.loginManager.loginAvailable()) {
+        this.loginManager.login(creds.username, creds.password);
+      }
     })
   }
   
