@@ -388,11 +388,11 @@ export class WorkerServer {
    */
   public addWordsRequestEvent(req: AddWordsRequest, socket: SocketIO.Socket): void {
     let res: AddWordsResponse = {success: false, isLoggedIn: false, invalidNumberOfWords: false};
-    if (req.words.length > 0 && req.words.length < 5) {
-      res.invalidNumberOfWords = true;
-      if (this.loginManager.isLoggedIn(socket)) {
+    if (this.loginManager.isLoggedIn(socket)) {
+      res.isLoggedIn = true;
+      
+      if (req.words.length > 0 && req.words.length < 5) {
         res.success = true;
-        res.isLoggedIn = true;
         let username = this.loginManager.getUsernameFromSocket(socket);
         let addWordResponsesData: {success: boolean, word: string, isValidWord: boolean, wordAlreadyAdded: boolean}[] = [];
         
@@ -411,6 +411,7 @@ export class WorkerServer {
         });
         
       } else {
+        res.invalidNumberOfWords = true;
         this.addWordsResponse(socket, res);
       }
     } else {
@@ -424,7 +425,7 @@ export class WorkerServer {
    * @param username  Username of the user who added the word.
    * @param res Contains information about adding the words.
    */
-  private addWordsMasterRequest(username: string, res: AddWordsResponse) {
+  private addWordsMasterRequest(username: string, res: AddWordsResponse): void {
     if (this.masterSocketConnected) {
       this.masterClientSocket.addWordsMasterRequest({username: username, res: res});
     }
@@ -436,7 +437,7 @@ export class WorkerServer {
    * matching that of the add word username.
    * @param res Contains data about the add words.
    */
-  public addWordsMasterResponse(res: AddWordsMaster) {
+  public addWordsMasterResponse(res: AddWordsMaster): void {
     this.addWordsForAllConnectedClients(res.username, res.res);
   }
   
@@ -447,7 +448,7 @@ export class WorkerServer {
    * @param username  The username of the user who added the words.
    * @param res Contains information about the add words success.
    */
-  private addWordsForAllConnectedClients(username: string, res: AddWordsResponse) {
+  private addWordsForAllConnectedClients(username: string, res: AddWordsResponse): void {
     this.loginManager.forEachSocketWithUsername(username, (socket: SocketIO.Socket) => {
       this.addWordsResponse(socket, res);
     });
@@ -461,7 +462,7 @@ export class WorkerServer {
    * @param word      The word to be added to the database.
    * @param callback  Function to be run after.
    */
-  private addWordsProcessWord(username: string, word: string, callback?: (someData) => void) {
+  private addWordsProcessWord(username: string, word: string, callback?: (someData) => void): void {
     let isValidWord = this.isValidWord(word);
     let addWordResponseData: {success: boolean, word: string, isValidWord: boolean, wordAlreadyAdded: boolean} =
       {success: false, word: word, isValidWord: isValidWord, wordAlreadyAdded: false};

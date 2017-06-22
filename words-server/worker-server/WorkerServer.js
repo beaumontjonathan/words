@@ -349,11 +349,10 @@ var WorkerServer = (function () {
     WorkerServer.prototype.addWordsRequestEvent = function (req, socket) {
         var _this = this;
         var res = { success: false, isLoggedIn: false, invalidNumberOfWords: false };
-        if (req.words.length > 0 && req.words.length < 5) {
-            res.invalidNumberOfWords = true;
-            if (this.loginManager.isLoggedIn(socket)) {
+        if (this.loginManager.isLoggedIn(socket)) {
+            res.isLoggedIn = true;
+            if (req.words.length > 0 && req.words.length < 5) {
                 res.success = true;
-                res.isLoggedIn = true;
                 var username_2 = this.loginManager.getUsernameFromSocket(socket);
                 var addWordResponsesData_1 = [];
                 var counter_1 = req.words.length;
@@ -370,6 +369,7 @@ var WorkerServer = (function () {
                 });
             }
             else {
+                res.invalidNumberOfWords = true;
                 this.addWordsResponse(socket, res);
             }
         }
